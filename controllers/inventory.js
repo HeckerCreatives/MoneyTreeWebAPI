@@ -91,11 +91,13 @@ exports.buybank = async (req, res) => {
 
         await Inventory.create({
             owner: new mongoose.Types.ObjectId(id), 
-            name: name,
+            type: type,
             startdate: DateTimeServer(), 
             duration: bank.duration, 
             expiration: DateTimeServerExpiration(bank.duration), 
-            type: bank.type, 
+            bankname: bank.name,
+            fruitcollection: 0,
+            dailyclaim: 0, 
             totalaccumulated: 0, 
             dailyaccumulated: 0,
             totalincome: totalincome,
@@ -109,7 +111,7 @@ exports.buybank = async (req, res) => {
     })
     
     
-    const inventoryhistory = await saveinventoryhistory(id, bank.name, bank.type, `Buy ${bank.name}`, amount)
+    const inventoryhistory = await saveinventoryhistory(id, bank.name, `Buy ${bank.name}`, amount)
     
     await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${bank.name}`, `User ${username} bought ${bank.name}`, amount)
 
@@ -119,7 +121,9 @@ exports.buybank = async (req, res) => {
             startdate: DateTimeServer(), 
             duration: bank.duration, 
             expiration: DateTimeServerExpiration(bank.duration), 
-            name: bank.name, 
+            bankname: bank.name,
+            fruitcollection: 0,
+            dailyclaim: 0, 
             totalaccumulated: 0, 
             dailyaccumulated: 0,
             totalincome: totalincome,
@@ -145,16 +149,13 @@ exports.buybank = async (req, res) => {
             startdate: DateTimeServer(), 
             duration: bank.duration, 
             expiration: DateTimeServerExpiration(bank.duration), 
-            name: bank.name, 
+            bankname: bank.name,
+            fruitcollection: 0,
+            dailyclaim: 0, 
             totalaccumulated: 0, 
             dailyaccumulated: 0,
             totalincome: totalincome,
-            dailyclaim: 0,  
             price: amount,
-            petname: bank.name,
-            petclean: 0,
-            petlove: 0,
-            petfeed: 0,
         })
     .catch(err => {
         
@@ -164,7 +165,7 @@ exports.buybank = async (req, res) => {
     })
     
     
-    const inventoryhistory = await saveinventoryhistory(id, bank.name, bank.type, `Buy ${bank.name}`, amount)
+    const inventoryhistory = await saveinventoryhistory(id, bank.name, `Buy ${bank.name}`, amount)
     
     await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${bank.name}`, `User ${username} bought ${bank.name}`, amount)
     }
@@ -221,7 +222,7 @@ exports.claimtotalincome = async (req, res) => {
     if (wallethistory.message != "success"){
         return res.status(400).json({message: "bad-request", data: "There's a problem processing your data. Please contact customer support"})
     }
-    await saveinventoryhistory(id, `${bank.name}`, bank.type, `Claim ${bank.name}`, bankdb.totalaccumulated)
+    await saveinventoryhistory(id, `${bank.name}`, `Claim ${bank.name}`, bankdb.totalaccumulated)
 
     await addanalytics(id, wallethistory.data.transactionid, `gamebalance`, `Player ${username} claim ${bankdb.totalaccumulated} in Bank ${bankdb.type}`, bankdb.totalaccumulated)
 

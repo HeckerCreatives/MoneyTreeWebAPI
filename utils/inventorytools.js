@@ -5,6 +5,7 @@ const Inventoryhistory = require("../models/Inventoryhistory")
 exports.saveinventoryhistory = async(id, bankname, historytype, amount) => {
     const history = await Inventoryhistory.create({owner: new mongoose.Types.ObjectId(id), bankname: bankname, type: historytype,   amount: amount})
     .catch(err => {
+        console.log(`Error: ${err}`)
         return {
             message: "bad-request"
         }
