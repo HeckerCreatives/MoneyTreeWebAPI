@@ -195,7 +195,7 @@ exports.claimtotalincome = async (req, res) => {
 
     const bank = await Bank.findOne({ name: bankdb.name, type: bankdb.type})
 
-    const templimit = (bank.amount * bank.percentage) + bank.amount
+    const templimit = (bankdb.price * bank.profit) + bank.price
 
     if (Math.round(bankdb.totalaccumulated) < templimit){
         return res.status(400).json({message: "failed", data: "You still didn't reach the limit of this bank! keep playing and reach the limit in order to claim"})
