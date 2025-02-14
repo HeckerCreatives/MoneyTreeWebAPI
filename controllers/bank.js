@@ -24,7 +24,7 @@ exports.getBanks = async (req, res) => {
 
 exports.editbank = async (req, res) => {
 
-    const { bankid, profit, duration, min, max, b1t1 } = req.body
+    const { bankid, profit, duration, min, max, b1t1, islocked } = req.body
 
     if(!bankid || !profit || !duration){
         return res.status(400).json({ message: "failed", data: "Incomplete form data."})
@@ -51,6 +51,7 @@ exports.editbank = async (req, res) => {
                 duration: parseFloat(duration),
                 min: parseFloat(min),
                 max: parseFloat(max),
+                ...(islocked && { islocked }),
                 ...(b1t1 && { b1t1 }) // Only update b1t1 if it is provided
             }
         }

@@ -114,13 +114,34 @@ exports.initialize = async () => {
     if(banks.length <= 0){
         const bank = [
             {
+                type: "nest_stash",
+                name: "Nest Stash",
+                min: 100,
+                max: 1000,
+                profit: 0.1,
+                duration: 3,
+                b1t1: "0",
+                islocked: "0"
+            },
+            {
+                type: "wealth_jar",
+                name: "Wealth Jar",
+                min: 200,
+                max: 2000,
+                profit: 0.15,
+                duration: 5,
+                b1t1: "0",
+                islocked: "0"
+            },
+            {
             type: "piggy_bank",
             name: "Piggy Bank",
             min: 500,
             max: 5000,
             profit: 0.2,
             duration: 7,
-            b1t1: "0"
+            b1t1: "0",
+            islocked: "0"
             },
             {
             type: "money_vault",
@@ -129,7 +150,8 @@ exports.initialize = async () => {
             max: 10000,
             profit: 0.50,
             duration: 14,
-            b1t1: "0"
+            b1t1: "0",
+            islocked: "1"
             },
             {
             type: "treasure_chest",
@@ -138,7 +160,8 @@ exports.initialize = async () => {
             max: 50000,
             profit: 1.2,
             duration: 28,
-            b1t1: "0"
+            b1t1: "0",
+            islocked: "1"
             },
         ];
 
