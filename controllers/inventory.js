@@ -193,7 +193,7 @@ exports.claimtotalincome = async (req, res) => {
         return res.status(400).json({message: "failed", data: "No bank is selected"})
     }
 
-    const bank = await Bank.findOne({ name: bankdb.name, type: bankdb.type})
+    const bank = await Bank.findOne({ name: bankdb.bankname, type: bankdb.type})
 
     const templimit = (bankdb.price * bank.profit) + bank.price
 
