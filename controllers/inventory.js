@@ -284,7 +284,7 @@ exports.getinventory = async (req, res) => {
         const pages = Math.ceil(totalDocuments / pageOptions.limit);
 
         const data = await Promise.all(inventoryItems.map(async (item) => {
-            const { _id, type, name, duration, dailyaccumulated, totalaccumulated, qty, price, startdate } = item;
+            const { _id, type, bankname, duration, dailyaccumulated, totalaccumulated, qty, price, startdate } = item;
 
             const bank = await Bank.findOne({ type: type });
 
@@ -302,7 +302,7 @@ exports.getinventory = async (req, res) => {
             return {
                 bankid: _id,
                 type: type,
-                name: name,
+                bankname: bankname,
                 qty: qty,
                 duration: duration,
                 totalaccumulated: totalaccumulated,
