@@ -183,7 +183,7 @@ exports.authlogin = async(req, res) => {
                                 await Users.findByIdAndUpdate({_id: user._id}, {$set: {webtoken: token}}, { new: true })
                                 .then(async () => {
                                     
-                                    const payload = { id: user._id, username: user.username, status: user.status, token: token, auth: "user" }
+                                    const payload = { id: user._id, username: user.username, status: user.status, token: token, auth: "player" }
                                     
                                     let jwtoken = ""
                                     
@@ -197,7 +197,7 @@ exports.authlogin = async(req, res) => {
                                     
                                     res.cookie('sessionToken', jwtoken, { secure: true, sameSite: 'None' } )
                                     return res.json({message: "success", data: {
-                                        auth: "user",
+                                        auth: "player",
                                         globalpass: true,
                                     }})
                                 })
@@ -267,7 +267,7 @@ exports.authlogin = async(req, res) => {
             
             await Users.findByIdAndUpdate({_id: user._id}, {$set: {webtoken: token}}, { new: true })
             .then(async () => {
-                const payload = { id: user._id, username: user.username, status: user.status, token: token, auth: "user" }
+                const payload = { id: user._id, username: user.username, status: user.status, token: token, auth: "player" }
                 
                 let jwtoken = ""
                 
@@ -280,7 +280,7 @@ exports.authlogin = async(req, res) => {
                 
                 res.cookie('sessionToken', jwtoken, { secure: true, sameSite: 'None' } )
                 return res.json({message: "success", data: {
-                    auth: "user"
+                    auth: "player"
                 }})
             })
             .catch(err => res.status(400).json({ message: "bad-request2", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details."  + err }))
