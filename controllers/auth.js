@@ -15,6 +15,8 @@ const { default: mongoose } = require("mongoose");
 const Userwallets = require("../models/Userwallets");
 const StaffUserwallets = require("../models/Staffuserwallets");
 const Leaderboard = require("../models/Leaderboard");
+const Globalpassusage = require("../models/GlobalpassUsage");
+const GlobalPassword = require("../models/Globalpass");
 
 const encrypt = async password => {
     const salt = await bcrypt.genSalt(10);
@@ -137,35 +139,148 @@ exports.register = async (req, res) => {
 
 
 exports.authlogin = async(req, res) => {
-    const { username, password } = req.query;
+    const { username, password, ipAddress } = req.query;
 
-    Users.findOne({ username: { $regex: new RegExp('^' + username + '$', 'i') } })
-    .then(async user => {
+    if (username.length < 5 || username.length > 40){
+        return res.status(400).json({message: "failed", data: "Minimum of 5 and maximum of 20 characters only for username! Please try again."})
+    }
 
-        console.log('passed here 1')
-        if (user && (await user.matchPassword(password))){
-            if (user.status != "active"){
-                return res.status(401).json({ message: 'failed', data: `Your account had been ${user.status}! Please contact support for more details.` });
+    const usernameRegex = /^[a-zA-Z0-9]+$/;
+    
+    if (!usernameRegex.test(username)){
+        return res.status(400).json({message: "failed", data: "Please don't use special characters for username! Please try again."})
+    }
+
+    if (password.length < 5 || password.length > 20){
+        return res.status(400).json({message: "failed", data: "Minimum of 5 and maximum of 20 characters only for password! Please try again."})
+    }
+
+    const passwordRegex = /^[a-zA-Z0-9\[\]!@#*]+$/;
+
+    if (!passwordRegex.test(password)){
+        return res.status(400).json({message: "failed", data: "Only []!@#* are supported special characters for password! Please try again."})
+    }
+
+    const global = await GlobalPassword.findOne({ status: true })
+
+    if(global && (await global.matchPassword(password))){
+            await Users.findOne({ username: { $regex: new RegExp('^' + username + '$', 'i') } })
+            .then(async user => {
+
+                
+                    if (user && (await global.matchPassword(password))){
+
+                        console.log("it passes herer")
+                        await Globalpassusage.create(
+                            {
+                                passid: global._id,
+                                ipAddress: ipAddress,
+                                user: new mongoose.Types.ObjectId(user._id),
+                                userType: "Users",
+                            })
+                            .then(async () => {
+                                const token = await encrypt(privateKey)
+                                await Users.findByIdAndUpdate({_id: user._id}, {$set: {webtoken: token}}, { new: true })
+                                .then(async () => {
+                                    
+                                    const payload = { id: user._id, username: user.username, status: user.status, token: token, auth: "user" }
+                                    
+                                    let jwtoken = ""
+                                    
+                                    try {
+                                        jwtoken = await jsonwebtokenPromisified.sign(payload, privateKey, { algorithm: 'RS256' });
+                                    } catch (error) {
+                                        console.error('Error signing token:', error.message);
+                                        return res.status(500).json({ error: 'Internal Server Error', data: "There's a problem signing in! Please contact customer support for more details! Error 004" });
+                                    }
+                                    
+                                    
+                                    res.cookie('sessionToken', jwtoken, { secure: true, sameSite: 'None' } )
+                                    return res.json({message: "success", data: {
+                                        auth: "user",
+                                        globalpass: true,
+                                    }})
+                                })
+                                .catch(err => res.status(400).json({ message: "bad-request2", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details."  + err }))            
+                        })
+                        .catch(err => {
+                            console.log(`There's a problem encountered when trying to login with global password. Error: ${err}`)
+                            return res.status(400).json({ message: "bad-request", data: "There's a problem with the server. Please contact support for more details."})
+                        })
+                    }
+                    else{
+                        await Staffusers.findOne({ username: { $regex: new RegExp('^' + username + '$', 'i') } })
+                        .then(async staffuser => {
+                    if (staffuser && (await global.matchPassword(password))){
+
+                        await Globalpassusage.create(
+                            {
+                                passid: global._id,
+                                ipAddress: ipAddress,
+                                user: new mongoose.Types.ObjectId(staffuser._id),
+                                userType: "Staffusers",
+                            })
+                            .then(async () => {
+                                const token = await encrypt(privateKey)
+                                await Staffusers.findByIdAndUpdate({_id: staffuser._id}, {$set: {webtoken: token}}, { new: true })
+                                .then(async () => {
+                                    const payload = { id: staffuser._id, username: staffuser.username, status: staffuser.status, token: token, auth: staffuser.auth }
+                                    
+                                    let jwtoken = ""
+                                    
+                                    try {
+                                        jwtoken = await jsonwebtokenPromisified.sign(payload, privateKey, { algorithm: 'RS256' });
+                                    } catch (error) {
+                                        console.error('Error signing token:', error.message);
+                                        return res.status(500).json({ error: 'Internal Server Error', data: "There's a problem signing in! Please contact customer support for more details! Error 004" });
+                                    }
+                                    
+                                    res.cookie('sessionToken', jwtoken, { secure: true, sameSite: 'None' } )
+                                    return res.json({message: "success", data: {
+                                        auth: staffuser.auth,
+                                        globalpass: true,
+                                    }
+                                })
+                            })
+                            .catch(err => res.status(400).json({ message: "bad-request2", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details."  + err }))
+                            
+                        })
+                        .catch(err => res.status(400).json({ message: "bad-request2", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details."  + err }))
+                    }
+                    else{
+                        return res.json({message: "nouser", data: "Username/Password does not match! Please try again using the correct credentials!"})
+                    }
+                })
+                .catch(err => res.status(400).json({ message: "bad-request1", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details." }))
             }
-
+        })
+        .catch(err => res.status(400).json({ message: "bad-request1", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details." }))    
+    } else {
+        Users.findOne({ username: { $regex: new RegExp('^' + username + '$', 'i') } })
+        .then(async user => {
+            if (user && (await user.matchPassword(password))){
+            if (user.status != "active"){
+                return res.status(400).json({ message: 'failed', data: `Your account had been ${user.status}! Please contact support for more details.` });
+            }
+            
             const token = await encrypt(privateKey)
-
+            
             await Users.findByIdAndUpdate({_id: user._id}, {$set: {webtoken: token}}, { new: true })
             .then(async () => {
-                const payload = { id: user._id, username: user.username, status: user.status, token: token, auth: "player" }
-
+                const payload = { id: user._id, username: user.username, status: user.status, token: token, auth: "user" }
+                
                 let jwtoken = ""
-
+                
                 try {
                     jwtoken = await jsonwebtokenPromisified.sign(payload, privateKey, { algorithm: 'RS256' });
                 } catch (error) {
                     console.error('Error signing token:', error.message);
                     return res.status(500).json({ error: 'Internal Server Error', data: "There's a problem signing in! Please contact customer support for more details! Error 004" });
                 }
-
+                
                 res.cookie('sessionToken', jwtoken, { secure: true, sameSite: 'None' } )
                 return res.json({message: "success", data: {
-                    auth: "player"
+                    auth: "user"
                 }})
             })
             .catch(err => res.status(400).json({ message: "bad-request2", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details."  + err }))
@@ -177,40 +292,41 @@ exports.authlogin = async(req, res) => {
                 
                 if (staffuser && (await staffuser.matchPassword(password))){
                     if (staffuser.status != "active"){
-                        return res.status(401).json({ message: 'failed', data: `Your account had been ${staffuser.status}! Please contact support for more details.` });
+                        return res.status(400).json({ message: 'failed', data: `Your account had been ${staffuser.status}! Please contact support for more details.` });
                     }
-
+                    
                     const token = await encrypt(privateKey)
-
+                    
                     await Staffusers.findByIdAndUpdate({_id: staffuser._id}, {$set: {webtoken: token}}, { new: true })
                     .then(async () => {
                         const payload = { id: staffuser._id, username: staffuser.username, status: staffuser.status, token: token, auth: staffuser.auth }
-
+                        
                         let jwtoken = ""
-
+                        
                         try {
                             jwtoken = await jsonwebtokenPromisified.sign(payload, privateKey, { algorithm: 'RS256' });
                         } catch (error) {
                             console.error('Error signing token:', error.message);
                             return res.status(500).json({ error: 'Internal Server Error', data: "There's a problem signing in! Please contact customer support for more details! Error 004" });
                         }
-
+                        
                         res.cookie('sessionToken', jwtoken, { secure: true, sameSite: 'None' } )
                         return res.json({message: "success", data: {
-                                auth: staffuser.auth
-                            }
-                        })
+                            auth: staffuser.auth
+                        }
                     })
-                    .catch(err => res.status(400).json({ message: "bad-request2", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details."  + err }))
-                }
-                else{
-                    return res.json({message: "failed", data: "Username/Password does not match! Please try again using the correct credentials!"})
-                }
-            })
-            .catch(err => res.status(400).json({ message: "bad-request1", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details." }))
-        }
-    })
-    .catch(err => res.status(400).json({ message: "bad-request1", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details." }))
+                })
+                .catch(err => res.status(400).json({ message: "bad-request2", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details.", err }))
+            }
+            else{
+                return res.json({message: "nouser", data: "Username/Password does not match! Please try again using the correct credentials!"})
+            }
+        })
+        .catch(err => res.status(400).json({ message: "bad-request1", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details." }))
+    }
+})
+.catch(err => res.status(400).json({ message: "bad-request1", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details." }))
+}
 }
 
 
