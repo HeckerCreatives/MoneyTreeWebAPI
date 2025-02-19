@@ -306,6 +306,7 @@ exports.getinventory = async (req, res) => {
                 qty: qty,
                 duration: duration,
                 totalaccumulated: totalaccumulated,
+                dailyaccumulated: dailyaccumulated,
                 limittotal: creaturelimit,
                 limitdaily: limitperday,
                 earnings: earnings,
