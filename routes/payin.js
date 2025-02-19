@@ -6,14 +6,14 @@ router
     .get("/getpayinlist", protectsuperadmin, getpayinlist)
     .get("/getpayinhistorysuperadmin", protectsuperadmin, getpayinhistorysuperadmin)
     .get("/getpayinhistoryplayer", protectplayer, getpayinhistoryplayer)
-    .get("/getpayinlistadmin", protectadmin, getpayinlist)
-    .get("/getpayinhistoryadmin", protectadmin, getpayinhistoryadmin)
     .get("/gettotalpayin", gettotalpayin)
     .post("/processpayin", protectsuperadmin, processpayin)
     .post("/requestpayin", protectplayer, requestpayin)
-    .post("/processpayinadmin", protectadmin, processpayin)
     .post("/superadminsendfiatplayer", protectsuperadmin, sendfiattoplayer)
-    .post("/adminsendfiatplayer", protectadmin, sendfiattoplayer)
     .post("/deletepayinplayersuperadminn", protectsuperadmin, deletepayinplayersuperadmin)
-
+    
+    .get("/getpayinhistoryadmin", protectadmin, getpayinhistoryadmin)
+    .get("/getpayinlistadmin", protectadmin, getpayinlist)
+    .post("/processpayinadmin", protectadmin, processpayin)
+    .post("/adminsendfiatplayer", protectadmin, sendfiattoplayer)
 module.exports = router;
