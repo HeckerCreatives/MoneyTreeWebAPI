@@ -40,7 +40,7 @@ exports.getsadashboard = async(req, res) => {
     const productspipeline = [
         {
             $match: {
-                type: { $regex: "^buy$", $options: "i" }
+                type: { $regex: /^Buy\s/, $options: "i" } // Match 'Buy' followed by whitespace, case-insensitive
             }
         },
         {

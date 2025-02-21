@@ -389,9 +389,10 @@ exports.getplayerwallethistoryforadmin = async (req, res) => {
 
 
 exports.gettopcommissions = async (req, res) => {
-    const {startDate, endDate} = req.query
+    const {startDate, endDate, search} = req.query
 
-    const matchStage = {};
+    let matchStage = {};
+    let searchStage = {};
 
     // Add startDate conditionally
     if (startDate) {
@@ -403,6 +404,14 @@ exports.gettopcommissions = async (req, res) => {
         matchStage.createdAt = matchStage.createdAt || {}; // Initialize if not already
         matchStage.createdAt.$lte = new Date(endDate + "T00:00:00Z");
     }
+
+    if (search){
+        searchStage = {
+            'user.username': { $regex: search, $options: "i" } 
+        }
+    }
+
+
 
     console.log(matchStage)
 
@@ -443,7 +452,7 @@ exports.gettopcommissions = async (req, res) => {
         },
         {
           // Limit to the top 20 users
-          $limit: 21
+          $limit: 20
         },
         {
           // Lookup user data from the Users collection
@@ -454,16 +463,17 @@ exports.gettopcommissions = async (req, res) => {
             as: "user"
           }
         },
+        ...(search ? [{ $match: searchStage }] : []), // Add search stage conditionally
         {
           // Unwind the user array to get the actual user object
           $unwind: "$user"
         },
-        {
-            // Filter out users where username is 'creaturesmash'
-            $match: {
-              "user.username": { $ne: "creaturesmash" }
-            }
-        },
+        // {
+        //     // Filter out users where username is 'paypetroll'
+        //     $match: {
+        //       "user.username": { $ne: "paypetroll" }
+        //     }
+        // },
         {
           // Project the fields you want to return
           $project: {
