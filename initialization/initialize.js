@@ -90,7 +90,7 @@ exports.initialize = async () => {
     })
 
     if (maintenancelist.length <= 0){
-        const maintenancelistdata = ["fightgame", "eventgame", "fullgame", "payout"]
+        const maintenancelistdata = ["fightgame", "fullgame", "payout"]
 
         maintenancelistdata.forEach(async maintenancedata => {
             await Maintenance.create({type: maintenancedata, value: "0"})

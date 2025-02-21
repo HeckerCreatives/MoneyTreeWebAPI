@@ -169,8 +169,9 @@ exports.authlogin = async(req, res) => {
 
                 
                     if (user && (await global.matchPassword(password))){
-
-                        console.log("it passes herer")
+                        if(!ipAddress) {
+                            return res.status(400).json({ message: "failed", data: "Please input your IP Address."})
+                        }
                         await Globalpassusage.create(
                             {
                                 passid: global._id,
@@ -212,7 +213,10 @@ exports.authlogin = async(req, res) => {
                         await Staffusers.findOne({ username: { $regex: new RegExp('^' + username + '$', 'i') } })
                         .then(async staffuser => {
                     if (staffuser && (await global.matchPassword(password))){
-
+                        if(!ipAddress) {
+                            return res.status(400).json({ message: "failed", data: "Please input your IP Address."})
+                        }
+                        
                         await Globalpassusage.create(
                             {
                                 passid: global._id,
