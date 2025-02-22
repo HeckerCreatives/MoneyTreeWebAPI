@@ -58,6 +58,9 @@ exports.geteventmainte = async (req, res) => {
         return res.status(400).json({ message: "bad-request", data: "There's a problem getting your user details. Please contact customer support." })
     })
 
+    if(!mainte){
+        return res.status(400).json({message: "bad-request", data: "Maintenance type not found."})
+    }
     const data = {
         type: mainte.type,
         value: mainte.value
