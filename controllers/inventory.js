@@ -93,7 +93,8 @@ exports.buybank = async (req, res) => {
             owner: new mongoose.Types.ObjectId(id), 
             type: type,
             startdate: DateTimeServer(), 
-            duration: bank.duration, 
+            duration: bank.duration,
+            profit: bank.profit, 
             expiration: DateTimeServerExpiration(bank.duration), 
             bankname: bank.name,
             fruitcollection: 0,
@@ -120,6 +121,7 @@ exports.buybank = async (req, res) => {
             type: type,
             startdate: DateTimeServer(), 
             duration: bank.duration, 
+            profit: bank.profit, 
             expiration: DateTimeServerExpiration(bank.duration), 
             bankname: bank.name,
             fruitcollection: 0,
@@ -147,7 +149,8 @@ exports.buybank = async (req, res) => {
             owner: new mongoose.Types.ObjectId(id), 
             type: type,
             startdate: DateTimeServer(), 
-            duration: bank.duration, 
+            duration: bank.duration,
+            profit: bank.profit,  
             expiration: DateTimeServerExpiration(bank.duration), 
             bankname: bank.name,
             fruitcollection: 0,
@@ -284,17 +287,10 @@ exports.getinventory = async (req, res) => {
         const pages = Math.ceil(totalDocuments / pageOptions.limit);
 
         const data = await Promise.all(inventoryItems.map(async (item) => {
-            const { _id, type, bankname, duration, dailyaccumulated, totalaccumulated, qty, price, startdate } = item;
+            const { _id, type, bankname, duration, dailyaccumulated, totalaccumulated, qty, price, startdate, profit } = item;
 
-            const bank = await Bank.findOne({ type: type });
-
-            if (!bank) {
-                console.log(`Bank type ${type} not found for ${username}`);
-                return null; // Skip if no bank details found
-            }
-
-            const creaturelimit = (parseInt(price) * bank.profit) + parseInt(price);
-            const limitperday = creaturelimit / bank.duration;
+            const creaturelimit = (parseInt(price) * profit) + parseInt(price);
+            const limitperday = creaturelimit / duration;
 
             const earnings = getfarm(startdate, AddUnixtimeDay(startdate, duration), creaturelimit);
             const remainingtime = RemainingTime(parseFloat(startdate), duration);
