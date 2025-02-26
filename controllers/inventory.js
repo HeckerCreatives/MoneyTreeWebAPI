@@ -144,7 +144,6 @@ exports.buybank = async (req, res) => {
     await addanalytics(id, inventoryhistory1.data.transactionid, `Buy ${bank.name}`, `User ${username} bought ${bank.name}`, amount)
 
     } else {
-
         await Inventory.create({
             owner: new mongoose.Types.ObjectId(id), 
             type: type,
@@ -202,11 +201,6 @@ exports.claimtotalincome = async (req, res) => {
 
     if (Math.round(bankdb.totalaccumulated) < templimit){
         return res.status(400).json({message: "failed", data: "You still didn't reach the limit of this bank! keep playing and reach the limit in order to claim"})
-    }
-    const remainingtime = RemainingTime(parseFloat(bankdb.startdate), bankdb.duration)
-
-    if (remainingtime > 0){
-        return res.status(400).json({message: "failed", data: "There are still remaining time before claiming! Wait for the timer to complete."})
     }
 
     await addwallet("gamebalance", bankdb.totalaccumulated, id)
