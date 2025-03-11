@@ -19,6 +19,7 @@ const routers = app => {
     app.use("/wallet", require("./wallet"))
     app.use("/walletconversion", require("./walletconversion"))
     app.use("/wallethistory", require("./wallethistory"))
+    app.use("/weather", require("./weather"))
 }
 
 module.exports = routers
