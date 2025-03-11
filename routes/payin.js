@@ -10,7 +10,7 @@ router
     .post("/processpayin", protectsuperadmin, processpayin)
     .post("/requestpayin", protectplayer, requestpayin)
     .post("/superadminsendfiatplayer", protectsuperadmin, sendfiattoplayer)
-    .post("/deletepayinplayersuperadminn", protectsuperadmin, deletepayinplayersuperadmin)
+    .post("/deletepayinplayersuperadmin", protectsuperadmin, deletepayinplayersuperadmin)
     
     .get("/getpayinhistoryadmin", protectadmin, getpayinhistoryadmin)
     .get("/getpayinlistadmin", protectadmin, getpayinlist)

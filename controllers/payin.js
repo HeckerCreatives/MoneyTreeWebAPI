@@ -426,8 +426,21 @@ exports.deletepayinplayersuperadmin = async (req, res) => {
         return res.status(400).json({message: "bad-request", data: "There's a problem getting the transaction. Please contact customer support!"})
     })
 
+    let walletbalance = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(userid), type: "fiatbalance"})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting the wallet balance for user ${userid}. Error: ${err}`)
+        
+        return res.status(400).json({message: "bad-request", data: "There's a problem getting the wallet balance. Please contact customer support!"})
+    })
+
     if (!transaction){
         return res.status(400).json({message: "failed", data: "No transaction is found! Please select a valid transaction"})
+    }
+    // check if user has enough balance to remove the balance
+
+    if (walletbalance.amount < transaction.value){
+        return res.status(400).json({message: "failed", data: "User does not have enough balance to delete the transaction"})
     }
 
     await Payin.findByIdAndUpdate({_id: new mongoose.Types.ObjectId(transactionid)}, {status: "deleted"})

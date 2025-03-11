@@ -8,6 +8,7 @@ const Maintenance = require("../models/Maintenance")
 const Leaderboard = require("../models/Leaderboard")
 const Sociallinks = require("../models/Sociallinks")
 const Bank = require("../models/Bank")
+const Weather = require("../models/Weather")
 
 
 exports.initialize = async () => {
@@ -116,30 +117,30 @@ exports.initialize = async () => {
             {
                 type: "nest_stash",
                 name: "Nest Stash",
-                min: 100,
-                max: 1000,
-                profit: 0.1,
-                duration: 3,
+                min: 500,
+                max: 5000,
+                profit: 0.2,
+                duration: 15,
                 b1t1: "0",
                 islocked: "0"
             },
             {
                 type: "wealth_jar",
                 name: "Wealth Jar",
-                min: 200,
-                max: 2000,
-                profit: 0.15,
-                duration: 5,
+                min: 1000,
+                max: 10000,
+                profit: 0.6,
+                duration: 30,
                 b1t1: "0",
                 islocked: "0"
             },
             {
             type: "piggy_bank",
             name: "Piggy Bank",
-            min: 500,
-            max: 5000,
-            profit: 0.2,
-            duration: 7,
+            min: 5000,
+            max: 50000,
+            profit: 1.5,
+            duration: 45,
             b1t1: "0",
             islocked: "0"
             },
@@ -243,6 +244,36 @@ exports.initialize = async () => {
         }) 
     }
 
+    const weather = await Weather.find()
+    .then(data => data)
+    .catch(err => {
+        console.log(`Error finding weather data: ${err}`)
+    })
+
+    if(weather.length <= 0){
+
+        const weatherdata = [
+            {
+                name: "sunny",
+                sound: "sunny"
+            },
+        ]
+
+        const weatherbulkwrite = weatherdata.map(data => ({
+            insertOne: {
+                document: data
+            }
+        }))
+
+        await Weather.bulkWrite(weatherbulkwrite)
+        .catch(err => {
+            console.log(`Error creating weather data: ${err}`)
+            return
+        })
+
+        console.log("Weather data initialized")
+    
+    }
 
     console.log("SERVER DATA INITIALIZED")
 }

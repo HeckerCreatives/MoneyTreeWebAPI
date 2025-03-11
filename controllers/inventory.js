@@ -513,3 +513,32 @@ exports.getinventoryhistoryuseradmin = async (req, res) => {
 
     return res.json({message: "success", data: data})
 }
+
+
+exports.maxplayerinventorysuperadmin = async (req, res) => {
+    
+    const {id, username} = req.user
+
+    const {playerid} = req.body
+    
+    if (!mongoose.Types.ObjectId.isValid(playerid)) {
+        return res.status(400).json({ message: 'Invalid user ID' });
+    }
+
+    try {    
+    
+        const bank = await Inventory.findOne({ owner: new mongoose.Types.ObjectId(playerid) });
+
+        bank.totalaccumulated = bank.totalincome
+        bank.duration = 0.0007
+
+        await bank.save();
+
+        return res.status(400).json({ message: "Success"});
+        
+    } catch (error) {
+        console.error(error)
+
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support."});
+    }
+}
