@@ -535,7 +535,7 @@ exports.maxplayerinventorysuperadmin = async (req, res) => {
 
         await bank.save();
 
-        return res.status(400).json({ message: "Success"});
+        return res.status(200).json({ message: "success"});
         
     } catch (error) {
         console.error(error)
