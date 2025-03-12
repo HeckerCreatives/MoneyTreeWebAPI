@@ -32,11 +32,7 @@ exports.buybank = async (req, res) => {
     const bank = await Bank.findOne({ type: type })
 
     if (amount < bank.min){
-        return res.status(400).json({ message: 'failed', data: `The minimum price for ${bank.name} is ${bank.min} pesos`})
-    }
-
-    if (amount > bank.max){
-        return res.status(400).json({ message: 'failed', data: `The maximum price for ${bank.name} is ${bank.max} pesos`})
+        return res.status(400).json({ message: 'failed', data: `The price for ${bank.name} is ${bank.min} pesos`})
     }
 
     const buy = await reducewallet("fiatbalance", amount, id)
