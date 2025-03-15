@@ -225,21 +225,10 @@ exports.sendcommissionunilevel = async (commissionAmount, id, bankname, banktype
                 amount: amount
             })
         } else {
-            historypipeline.push({
-                owner: new mongoose.Types.ObjectId(_id), 
-                type: "unilevelbalance", 
-                amount: amount, 
-                bankname: bankname, 
-                banktype: banktype, 
-                from: new mongoose.Types.ObjectId(id)
-            })
+            historypipeline.push({owner: new mongoose.Types.ObjectId(_id), type: "commissionbalance", amount: amount, bankname: bankname, banktype: banktype, from: new mongoose.Types.ObjectId(id)})
+        
+            analyticspipeline.push({owner: new mongoose.Types.ObjectId(_id), type: "commissionbalance", description: `Unilevel from ${id} to ${_id} with commission total amount of ${commissionAmount} and commission amount of ${amount}`, amount: amount})
 
-            analyticspipeline.push({
-                owner: new mongoose.Types.ObjectId(_id), 
-                type: "unilevelbalance", 
-                description: `Unilevel (level ${level}) from ${id} to ${_id} with commission total amount of ${commissionAmount} and unilevel amount of ${amount}`, 
-                amount: amount
-            })
         }
     })
 

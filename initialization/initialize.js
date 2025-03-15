@@ -275,7 +275,7 @@ exports.initialize = async () => {
     }
 
 
-    const wallets = ["directreferralbalance", "unilevelbalance"]
+    const wallets = ["directreferralbalance", "unilevelbalance", "gamebalance", "fiatbalance", "commissionbalance"]
 
     const usersz = await Users.find()
     .then(data => data)
