@@ -77,10 +77,10 @@ exports.sendcommissionunilevel = async (commissionAmount, id, bankname, banktype
                             { case: { $eq: ['$referralChain.level', 0] }, then: { $cond: {
                                         if: { $eq: ['$referralChain._id', new mongoose.Types.ObjectId(process.env.PAYPETROLLS_ID)]},
                                         then: {
-                                            $multiply: [commissionAmount, 0.15]
+                                            $multiply: [commissionAmount, 0.50]
                                         },
                                         else : {
-                                            $multiply: [commissionAmount, 0.15]
+                                            $multiply: [commissionAmount, 0.50]
                                         }
                                     } 
                                 }
