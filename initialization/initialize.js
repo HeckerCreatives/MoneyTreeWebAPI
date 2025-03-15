@@ -34,8 +34,7 @@ exports.initialize = async () => {
             return
         })
     
-        const wallets = ["fiatbalance", "gamebalance", "commissionbalance"]
-
+        const wallets = ["fiatbalance", "gamebalance", "commissionbalance", "directreferralbalance", "unilevelbalance"]
         wallets.forEach(async (data) => {
             await Userwallets.create({owner: new mongoose.Types.ObjectId(player._id), type: data, amount: 0})
             .catch(async err => {
@@ -273,6 +272,43 @@ exports.initialize = async () => {
 
         console.log("Weather data initialized")
     
+    }
+
+
+    const wallets = ["directreferralbalance", "unilevelbalance"]
+
+    const usersz = await Users.find()
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting users data ${err}`)
+        return
+    })
+    
+    if(usersz.length > 0){
+        for(const user of usersz) {
+            for(const walletType of wallets) {
+                // Check if wallet already exists for this user
+                const existingWallet = await Userwallets.findOne({
+                    owner: new mongoose.Types.ObjectId(user._id),
+                    type: walletType
+                }).catch(err => {
+                    console.log(`Error checking existing wallet: ${err}`)
+                    return null
+                })
+    
+                // Only create wallet if it doesn't exist
+                if(!existingWallet) {
+                    await Userwallets.create({
+                        owner: new mongoose.Types.ObjectId(user._id),
+                        type: walletType,
+                        amount: 0
+                    }).catch(err => {
+                        console.log(`There's a problem creating ${walletType} for user ${user._id}: ${err}`)
+                    })
+                    console.log(`Created ${walletType} for user ${user.username}`)
+                }
+            }
+        }
     }
 
     console.log("SERVER DATA INITIALIZED")

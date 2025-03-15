@@ -203,31 +203,73 @@ exports.sendcommissionunilevel = async (commissionAmount, id, bankname, banktype
     const historypipeline = []
     const analyticspipeline = []
 
+// ...existing code...
+
     unilevelresult.forEach(dataresult => {
         const { _id, level, amount } = dataresult
 
-        if (level == 0){
+        if (level == 0) {
+            historypipeline.push({
+                owner: new mongoose.Types.ObjectId(_id), 
+                type: "directreferralbalance", 
+                amount: amount, 
+                bankname: bankname, 
+                banktype: banktype, 
+                from: new mongoose.Types.ObjectId(id)
+            })
 
-            historypipeline.push({owner: new mongoose.Types.ObjectId(_id), type: "directreferralbalance", amount: amount, bankname: bankname, banktype: banktype, from: new mongoose.Types.ObjectId(id)})
+            analyticspipeline.push({
+                owner: new mongoose.Types.ObjectId(_id), 
+                type: "directreferralbalance", 
+                description: `Direct referral from ${id} to ${_id} with commission total amount of ${commissionAmount} and direct referral amount of ${amount}`, 
+                amount: amount
+            })
+        } else {
+            historypipeline.push({
+                owner: new mongoose.Types.ObjectId(_id), 
+                type: "unilevelbalance", 
+                amount: amount, 
+                bankname: bankname, 
+                banktype: banktype, 
+                from: new mongoose.Types.ObjectId(id)
+            })
 
-            analyticspipeline.push({owner: new mongoose.Types.ObjectId(_id), type: "directreferralbalance", description: `Unilevel from ${id} to ${_id} with commission total amount of ${commissionAmount} and direct referral amount of ${amount}`, amount: amount})
-        }
-        else{
-            historypipeline.push({owner: new mongoose.Types.ObjectId(_id), type: "commissionbalance", amount: amount, bankname: bankname, banktype: banktype, from: new mongoose.Types.ObjectId(id)})
-    
-            analyticspipeline.push({owner: new mongoose.Types.ObjectId(_id), type: "commissionbalance", description: `Unilevel from ${id} to ${_id} with commission total amount of ${commissionAmount} and commission amount of ${amount}`, amount: amount})
+            analyticspipeline.push({
+                owner: new mongoose.Types.ObjectId(_id), 
+                type: "unilevelbalance", 
+                description: `Unilevel (level ${level}) from ${id} to ${_id} with commission total amount of ${commissionAmount} and unilevel amount of ${amount}`, 
+                amount: amount
+            })
         }
     })
 
-    const bulkOperationUnilvl = unilevelresult.map(({_id, amount }) => ({
+    const bulkOperationUnilvl = unilevelresult.map(({_id, level, amount }) => ({
+        updateOne: {
+            filter: { 
+                owner: new mongoose.Types.ObjectId(_id), 
+                type: level === 0 ? 'directreferralbalance' : 'unilevelbalance' 
+            },
+            update: { $inc: { amount: amount}}
+        }
+    }))
+    
+    const bulkOperationUnilvlcommision = unilevelresult.map(({_id, amount }) => ({
         updateOne: {
             filter: { owner: new mongoose.Types.ObjectId(_id), type: 'commissionbalance' },
             update: { $inc: { amount: amount}}
         }
     }))
-    
+
 
     await Userwallets.bulkWrite(bulkOperationUnilvl)
+    .catch(err => {
+
+        console.log(`Failed to distribute commission wallet data, unilevel parent: ${id} commission amount: ${commissionAmount}, error: ${err}`)
+
+        return "failed"
+    })
+
+    await Userwallets.bulkWrite(bulkOperationUnilvlcommision)
     .catch(err => {
 
         console.log(`Failed to distribute commission wallet data, unilevel parent: ${id} commission amount: ${commissionAmount}, error: ${err}`)

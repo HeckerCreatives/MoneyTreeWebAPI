@@ -30,23 +30,6 @@ exports.requestpayout = async (req, res) => {
     //     return res.status(400).json({ message: "failed", data: "There's an existing request! Please wait for it to be processed before requesting another payout." })
     // }
 
-        const statisticReferral = await Wallethistory.aggregate([
-            { 
-                $match: { 
-                    owner: new mongoose.Types.ObjectId(id), 
-                    type: "directreferralbalance" 
-                } 
-            },
-            { 
-                $group: { 
-                    _id: null, 
-                    totalAmount: { $sum: "$amount" } 
-                } 
-            }
-        ]).catch(err => {
-            console.log(`Failed to get referral statistics for ${id}, error: ${err}`)
-            return res.status(400).json({ message: "bad-request", data: "There's a problem getting your user details. Please contact customer support." })
-        })
         
         // Validate payout amounts based on payment method
         if (paymentmethod === 'gotyme') {
@@ -67,16 +50,24 @@ exports.requestpayout = async (req, res) => {
         
         
         if (type === 'referral') {
-         const maxAllowedPayout = statisticReferral.length > 0 ? statisticReferral[0].totalAmount * 0.5 : 0;       
+
+            const walletamount = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(id), type: 'directreferralbalance'})
+            .then(data => data)
+            .catch(err => {
+                console.log(`There's a problem getting leaderboard data ${err}`)
+                return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
+            })
+
+         const maxAllowedPayout = walletamount.amount * 0.5;       
              if (payoutvalue > maxAllowedPayout) {
                 return res.status(400).json({ 
                     message: "failed", 
                     data: `Referral payout cannot exceed 50% of your total referral earnings (${maxAllowedPayout})` 
                  });
             }
-            payouttype = 'commissionbalance'
+            payouttype = 'directreferralbalance'
         } else if (type === 'unilevel'){
-            payouttype = 'commissionbalance'
+            payouttype = 'unilevelbalance'
         } else if (type === 'gamebalance'){
             payouttype = 'gamebalance'
         }
@@ -86,7 +77,7 @@ exports.requestpayout = async (req, res) => {
     .catch(err => {
         console.log(`There's a problem getting leaderboard data ${err}`)
         return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
-    })
+    })     
 
     if (payoutvalue > wallet.amount){
         return res.status(400).json({ message: "failed", data: "The amount is greater than your wallet balance" })
