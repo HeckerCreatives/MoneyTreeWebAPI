@@ -37,6 +37,54 @@ exports.getsadashboard = async(req, res) => {
 
     data["commission"] = commission.length > 0 ? commission[0].totalAmount : 0
 
+    const referralcommissiontotalpipeline = [
+        {
+            $match: {
+                type: "directreferralbalance"
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalAmount: { $sum: "$amount" }
+            }
+        }
+    ]
+
+    const referral = await Analytics.aggregate(referralcommissiontotalpipeline)
+    .catch(err => {
+
+        console.log(`There's a problem getting commission and buy aggregate for ${username} Error: ${err}`)
+
+        return res.status(400).json({ message: "bad-request", data: `There's a problem with the server. Please try again later. Error: ${err}` })
+    })
+
+    data["referral"] = referral.length > 0 ? referral[0].totalAmount : 0
+
+    const unilevelcommissiontotalpipeline = [
+        {
+            $match: {
+                type: "unilevelbalance"
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalAmount: { $sum: "$amount" }
+            }
+        }
+    ]
+
+    const unilevel = await Analytics.aggregate(unilevelcommissiontotalpipeline)
+    .catch(err => {
+
+        console.log(`There's a problem getting commission and buy aggregate for ${username} Error: ${err}`)
+
+        return res.status(400).json({ message: "bad-request", data: `There's a problem with the server. Please try again later. Error: ${err}` })
+    })
+
+    data["unilevel"] = unilevel.length > 0 ? unilevel[0].totalAmount : 0
+
     const productspipeline = [
         {
             $match: {

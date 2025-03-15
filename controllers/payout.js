@@ -89,7 +89,7 @@ exports.requestpayout = async (req, res) => {
         return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
     })
 
-    await Payout.create({owner: new mongoose.Types.ObjectId(id), status: "processing", value: payoutvalue, type: type, paymentmethod: paymentmethod, accountname: accountname, accountnumber: accountnumber})
+    await Payout.create({owner: new mongoose.Types.ObjectId(id), status: "processing", value: payoutvalue, type: payouttype, paymentmethod: paymentmethod, accountname: accountname, accountnumber: accountnumber})
     .catch(async err => {
 
         await Userwallets.findOneAndUpdate({owner: new mongoose.Types.ObjectId(id), type: type}, {$inc: {amount: payoutvalue}})
