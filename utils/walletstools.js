@@ -225,6 +225,7 @@ exports.sendcommissionunilevel = async (commissionAmount, id, bankname, banktype
             update: { $inc: { amount: amount}}
         }
     }))
+    
 
     await Userwallets.bulkWrite(bulkOperationUnilvl)
     .catch(err => {

@@ -6,12 +6,14 @@ const { addanalytics } = require("../utils/analyticstools")
 const { checkmaintenance } = require("../utils/maintenancetools")
 const Conversionrate = require("../models/Conversionrate")
 const StaffUserwallets = require("../models/Staffuserwallets")
+const Wallethistory = require("../models/Wallethistory")
 
 exports.requestpayout = async (req, res) => {
     const {id, username} = req.user
     const {type, payoutvalue, paymentmethod, accountname, accountnumber} = req.body
-
+    
     const maintenance = await checkmaintenance("payout")
+    let payouttype
 
     // if (maintenance == "maintenance"){
     //     return res.status(400).json({ message: "failed", data: "The payout is currently not available. Payout is only available from 12:00pm - 11:59pm Friday PST." })
@@ -28,14 +30,58 @@ exports.requestpayout = async (req, res) => {
     //     return res.status(400).json({ message: "failed", data: "There's an existing request! Please wait for it to be processed before requesting another payout." })
     // }
 
-    if (type == 'gotyme' || payoutvalue < 500){
-        return res.status(400).json({ message: "failed", data: "Payout value must be between 500" })
-    }
+        const statisticReferral = await Wallethistory.aggregate([
+            { 
+                $match: { 
+                    owner: new mongoose.Types.ObjectId(id), 
+                    type: "directreferralbalance" 
+                } 
+            },
+            { 
+                $group: { 
+                    _id: null, 
+                    totalAmount: { $sum: "$amount" } 
+                } 
+            }
+        ]).catch(err => {
+            console.log(`Failed to get referral statistics for ${id}, error: ${err}`)
+            return res.status(400).json({ message: "bad-request", data: "There's a problem getting your user details. Please contact customer support." })
+        })
+        
+        // Validate payout amounts based on payment method
+        if (paymentmethod === 'gotyme') {
+            if (payoutvalue < 500) {
+                return res.status(400).json({ 
+                    message: "failed", 
+                    data: "Gotyme payout value must be at least 500" 
+                });
+            }
+        } else if (paymentmethod === 'gcash') {
+            if (payoutvalue < 500 || payoutvalue > 5000) {
+                return res.status(400).json({ 
+                    message: "failed", 
+                    data: "GCash payout value must be between 500 and 5000" 
+                });
+            }
+        }
+        
+        
+        if (type === 'referral') {
+         const maxAllowedPayout = statisticReferral.length > 0 ? statisticReferral[0].totalAmount * 0.5 : 0;       
+             if (payoutvalue > maxAllowedPayout) {
+                return res.status(400).json({ 
+                    message: "failed", 
+                    data: `Referral payout cannot exceed 50% of your total referral earnings (${maxAllowedPayout})` 
+                 });
+            }
+            payouttype = 'commissionbalance'
+        } else if (type === 'unilevel'){
+            payouttype = 'commissionbalance'
+        } else if (type === 'gamebalance'){
+            payouttype = 'gamebalance'
+        }
 
-    if(type == 'gcash' || payoutvalue < 500 || payoutvalue > 5000){
-        return res.status(400).json({ message: "failed", data: "Payout value must be between 500 and 5000" })
-    }
-    const wallet = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(id), type: type})
+    const wallet = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(id), type: payouttype})
     .then(data => data)
     .catch(err => {
         console.log(`There's a problem getting leaderboard data ${err}`)
@@ -46,7 +92,7 @@ exports.requestpayout = async (req, res) => {
         return res.status(400).json({ message: "failed", data: "The amount is greater than your wallet balance" })
     }
 
-    await Userwallets.findOneAndUpdate({owner: new mongoose.Types.ObjectId(id), type: type}, {$inc: {amount: -payoutvalue}})
+    await Userwallets.findOneAndUpdate({owner: new mongoose.Types.ObjectId(id), type: payouttype}, {$inc: {amount: -payoutvalue}})
     .catch(err => {
         console.log(`There's a problem deducting payout value for ${username} with value ${payoutvalue}. Error: ${err}`)
         return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
