@@ -177,10 +177,10 @@ exports.getsadashboard = async(req, res) => {
 
     data["payoutgame"] = payoutgame.length > 0 ? payoutgame[0].totalAmount : 0
 
-    const payoutcommissionpipeline = [
+    const payoutdirectcommissionpipeline = [
         {
             $match: {
-                type: "payoutcommissionbalance"
+                type: "payoutdirectreferralbalance"
             }
         },
         {
@@ -190,7 +190,30 @@ exports.getsadashboard = async(req, res) => {
             }
         }
     ]
-    const payoutcommission = await Analytics.aggregate(payoutcommissionpipeline)
+    const payoutdirect = await Analytics.aggregate(payoutdirectcommissionpipeline)
+    .catch(err => {
+
+        console.log(`There's a problem getting payout direct referral aggregate for ${username} Error: ${err}`)
+
+        return res.status(400).json({ message: "bad-request", data: `There's a problem with the server. Please try again later. Error: ${err}` })
+    })
+    
+    data["payoutdirect"] = payoutdirect.length > 0 ? payoutdirect[0].totalAmount : 0
+
+    const payoutunilevelpipeline = [
+        {
+            $match: {
+                type: "payoutdirectreferralbalance"
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalAmount: { $sum: "$amount" }
+            }
+        }
+    ]
+    const payoutunilevel = await Analytics.aggregate(payoutunilevelpipeline)
     .catch(err => {
 
         console.log(`There's a problem getting payout commission aggregate for ${username} Error: ${err}`)
@@ -198,9 +221,9 @@ exports.getsadashboard = async(req, res) => {
         return res.status(400).json({ message: "bad-request", data: `There's a problem with the server. Please try again later. Error: ${err}` })
     })
     
-    data["payoutcommission"] = payoutcommission.length > 0 ? payoutcommission[0].totalAmount : 0
+    data["payoutunilevel"] = payoutunilevel.length > 0 ? payoutunilevel[0].totalAmount : 0
 
-    data["payout"] = parseFloat(data["payoutgame"]) + parseFloat(data["payoutcommission"])
+    data["payout"] = parseFloat(data["payoutgame"]) + parseFloat(data["payoutdirect"]) + parseFloat(data["payoutunilevel"])
 
     const adminfee = await StaffUserwallets.findOne({owner: new mongoose.Types.ObjectId(id)})
     .then(data => data)

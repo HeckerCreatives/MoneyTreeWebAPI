@@ -75,15 +75,15 @@ exports.buybank = async (req, res) => {
     
     
     
-    const b1t1 = await Maintenance.findOne({ type: "b1t1", value: "1" })
-    .then(data => data)
-    .catch(err => {
-        console.log(`There's a problem getting b1t1 maintenance. Error: ${err}`)
+    // const b1t1 = await Maintenance.findOne({ type: "b1t1", value: "1" })
+    // .then(data => data)
+    // .catch(err => {
+    //     console.log(`There's a problem getting b1t1 maintenance. Error: ${err}`)
 
-        return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
-    })
+    //     return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
+    // })
 
-    if(b1t1 && b1t1.value === '1' && b1t1.type === 'b1t1'){
+    if(bank.b1t1 == '1'){
 
         await Inventory.create({
             owner: new mongoose.Types.ObjectId(id), 

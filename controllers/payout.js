@@ -643,10 +643,11 @@ exports.deletepayout = async (req, res) => {
 }
 
 exports.gettotalrequest = async (req, res) => {
-    const commissionBalanceTotal = await Payout.aggregate([
+
+    const directreferralbalance = await Payout.aggregate([
         {
             $match: {
-                type: "commissionbalance",
+                type: "directreferralbalance",
                 status: "processing"
             }
         },
@@ -657,6 +658,22 @@ exports.gettotalrequest = async (req, res) => {
             }
         }
     ]);
+
+    const unilevelbalance = await Payout.aggregate([
+        {
+            $match: {
+                type: "unilevelbalance",
+                status: "processing"
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalAmount: { $sum: "$value" }
+            }
+        }
+    ]);
+
 
     const gameBalanceTotal = await Payout.aggregate([
         {
@@ -674,7 +691,8 @@ exports.gettotalrequest = async (req, res) => {
     ]);
 
     return res.json({message: "success", data: {
-        totalrequestcommission: commissionBalanceTotal.length > 0 ? (commissionBalanceTotal[0].totalAmount - (commissionBalanceTotal[0].totalAmount * 0.10)) : 0,
+        totalrequestdirect: directreferralbalance.length > 0 ? (directreferralbalance[0].totalAmount - (directreferralbalance[0].totalAmount * 0.10)) : 0,
+        totalrequestunilevel: unilevelbalance.length > 0 ? (unilevelbalance[0].totalAmount - (unilevelbalance[0].totalAmount * 0.10)) : 0,
         totalrequestgame: gameBalanceTotal.length > 0 ? (gameBalanceTotal[0].totalAmount - (gameBalanceTotal[0].totalAmount * 0.10)) : 0
     }})
 }
