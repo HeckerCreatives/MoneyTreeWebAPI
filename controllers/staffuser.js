@@ -109,6 +109,29 @@ exports.getsadashboard = async(req, res) => {
 
     data["products"] = products.length > 0 ? products[0].totalAmount : 0
 
+    const unilevelb = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(process.env.MONEYTREE_ID), type: "unilevelbalance"})
+    .then(data => data.amount)
+    .catch(err => {
+
+        console.log(`There's a problem getting unilevel for ${username} Error: ${err}`)
+
+        return res.status(400).json({ message: "bad-request", data: `There's a problem with the server. Please try again later. Error: ${err}` })
+    })
+    
+    data["unilevelbalance"] = unilevelb
+
+
+    const direct = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(process.env.MONEYTREE_ID), type: "directreferralbalance"})
+    .then(data => data.amount)
+    .catch(err => {
+
+        console.log(`There's a problem getting direct for ${username} Error: ${err}`)
+
+        return res.status(400).json({ message: "bad-request", data: `There's a problem with the server. Please try again later. Error: ${err}` })
+    })
+    
+    data["direct"] = direct
+
     const commissioned = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(process.env.MONEYTREE_ID), type: "commissionbalance"})
     .then(data => data.amount)
     .catch(err => {
