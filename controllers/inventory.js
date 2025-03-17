@@ -84,7 +84,7 @@ exports.buybank = async (req, res) => {
     // })
 
     if(bank.b1t1 == '1'){
-
+        // Create first inventory
         await Inventory.create({
             owner: new mongoose.Types.ObjectId(id), 
             type: type,
@@ -99,24 +99,24 @@ exports.buybank = async (req, res) => {
             dailyaccumulated: 0,
             totalincome: totalincome,
             price: amount,
+        }).catch(err => {
+            console.log(`Failed to bank inventory data for ${username} type: ${type}, error: ${err}`)
+            return res.status(400).json({ 
+                message: 'failed', 
+                data: `There's a problem with your account. Please contact customer support for more details` 
+            })
         })
-    .catch(err => {
         
-        console.log(`Failed to bank inventory data for ${username} type: ${type}, error: ${err}`)
-        
-        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
-    })
+        // Record history for first inventory
+        const inventoryhistory1 = await saveinventoryhistory(id, bank.name, `Buy ${bank.name} (1/2)`, amount)
+        await addanalytics(id, inventoryhistory1.data.transactionid, `Buy ${bank.name}`, `User ${username} bought ${bank.name} (1/2)`, amount)
     
-    
-    const inventoryhistory = await saveinventoryhistory(id, bank.name, `Buy ${bank.name}`, amount)
-    
-    await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${bank.name}`, `User ${username} bought ${bank.name}`, amount)
-
+        // Create second inventory (B1T1)
         await Inventory.create({
             owner: new mongoose.Types.ObjectId(id), 
             type: type,
             startdate: DateTimeServer(), 
-            duration: bank.duration, 
+            duration: bank.duration,
             profit: bank.profit, 
             expiration: DateTimeServerExpiration(bank.duration), 
             bankname: bank.name,
@@ -126,19 +126,17 @@ exports.buybank = async (req, res) => {
             dailyaccumulated: 0,
             totalincome: totalincome,
             price: amount,
+        }).catch(err => {
+            console.log(`Failed to bank inventory data for ${username} type: ${type}, error: ${err}`)
+            return res.status(400).json({ 
+                message: 'failed', 
+                data: `There's a problem with your account. Please contact customer support for more details` 
+            })
         })
-    .catch(err => {
-        
-        console.log(`Failed to bank inventory data for ${username} type: ${type}, error: ${err}`)
-        
-        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
-    })
-
-
-    const inventoryhistory1 = await saveinventoryhistory(id, bank.name, bank.type, `Buy ${bank.name}`, amount)
-
-    await addanalytics(id, inventoryhistory1.data.transactionid, `Buy ${bank.name}`, `User ${username} bought ${bank.name}`, amount)
-
+    
+        // Record history for second inventory (free B1T1)
+        const inventoryhistory2 = await saveinventoryhistory(id, bank.name, `Buy ${bank.name} (2/2 - Free B1T1)`, 0)
+        await addanalytics(id, inventoryhistory2.data.transactionid, `Buy ${bank.name}`, `User ${username} received free ${bank.name} (B1T1)`, 0)
     } else {
         await Inventory.create({
             owner: new mongoose.Types.ObjectId(id), 
