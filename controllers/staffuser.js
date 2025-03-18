@@ -109,28 +109,51 @@ exports.getsadashboard = async(req, res) => {
 
     data["products"] = products.length > 0 ? products[0].totalAmount : 0
 
-    const unilevelb = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(process.env.MONEYTREE_ID), type: "unilevelbalance"})
-    .then(data => data.amount)
-    .catch(err => {
+        // Get total unilevel balance across all users
+        const unilevelBalances = await Userwallets.aggregate([
+            {
+                $match: { 
+                    type: "unilevelbalance"
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalAmount: { $sum: "$amount" }
+                }
+            }
+        ]).catch(err => {
+            console.log(`There's a problem getting unilevel totals. Error: ${err}`)
+            return res.status(400).json({ 
+                message: "bad-request", 
+                data: `There's a problem with the server. Please try again later.` 
+            })
+        })
 
-        console.log(`There's a problem getting unilevel for ${username} Error: ${err}`)
+        data["unilevelbalance"] = unilevelBalances.length > 0 ? unilevelBalances[0].totalAmount : 0
 
-        return res.status(400).json({ message: "bad-request", data: `There's a problem with the server. Please try again later. Error: ${err}` })
-    })
-    
-    data["unilevelbalance"] = unilevelb
+        // Get total direct referral balance across all users
+        const directBalances = await Userwallets.aggregate([
+            {
+                $match: { 
+                    type: "directreferralbalance"
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalAmount: { $sum: "$amount" }
+                }
+            }
+        ]).catch(err => {
+            console.log(`There's a problem getting direct referral totals. Error: ${err}`)
+            return res.status(400).json({ 
+                message: "bad-request", 
+                data: `There's a problem with the server. Please try again later.` 
+            })
+        })
 
-
-    const direct = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(process.env.MONEYTREE_ID), type: "directreferralbalance"})
-    .then(data => data.amount)
-    .catch(err => {
-
-        console.log(`There's a problem getting direct for ${username} Error: ${err}`)
-
-        return res.status(400).json({ message: "bad-request", data: `There's a problem with the server. Please try again later. Error: ${err}` })
-    })
-    
-    data["direct"] = direct
+        data["direct"] = directBalances.length > 0 ? directBalances[0].totalAmount : 0
 
     const commissioned = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(process.env.MONEYTREE_ID), type: "commissionbalance"})
     .then(data => data.amount)
