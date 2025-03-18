@@ -155,6 +155,29 @@ exports.getsadashboard = async(req, res) => {
 
         data["direct"] = directBalances.length > 0 ? directBalances[0].totalAmount : 0
 
+                // Get total direct referral balance across all users
+        const gameBalance = await Userwallets.aggregate([
+                    {
+                        $match: { 
+                            type: "gamebalance"
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: null,
+                            totalAmount: { $sum: "$amount" }
+                        }
+                    }
+                ]).catch(err => {
+                    console.log(`There's a problem getting direct referral totals. Error: ${err}`)
+                    return res.status(400).json({ 
+                        message: "bad-request", 
+                        data: `There's a problem with the server. Please try again later.` 
+                    })
+                })
+        
+        data["gamewalletbalance"] = gameBalance.length > 0 ? gameBalance[0].totalAmount : 0
+
     const commissioned = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(process.env.MONEYTREE_ID), type: "commissionbalance"})
     .then(data => data.amount)
     .catch(err => {
