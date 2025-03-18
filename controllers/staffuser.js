@@ -226,7 +226,7 @@ exports.getsadashboard = async(req, res) => {
     const payoutunilevelpipeline = [
         {
             $match: {
-                type: "payoutdirectreferralbalance"
+                type: "payoutunilevelbalance"
             }
         },
         {
