@@ -27,6 +27,12 @@ exports.getuserdetails = async (req, res) => {
     if (!details){
         return res.status(400).json({ message: "bad-request", data: "There's a problem with your account! Please contact customer support." })
     }
+    const userData = await Users.findOne({_id: new mongoose.Types.ObjectId(id)})
+    .populate('referral', 'username')
+    .catch(err => {
+        console.log(`Error getting referral info: ${err}`)
+        return null
+    })
 
 
     const data = {
@@ -37,6 +43,7 @@ exports.getuserdetails = async (req, res) => {
         address: details.address,
         city: details.city,
         country: details.country,
+        referral: userData.referral ? userData.referral.username : null,
         postalcode: details.postalcode,
         paymentmethod: details.paymentmethod,
         accountnumber: details.accountnumber,

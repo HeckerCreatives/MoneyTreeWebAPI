@@ -113,7 +113,7 @@ exports.playerunilevel = async (req, res) => {
         },
         {
             $match: {
-                _id: { $lte: 10 },
+                _id: { $lte: 15 },
             },
         },
         {
@@ -248,7 +248,7 @@ exports.playeviewadminunilevel = async (req, res) => {
         },
         {
             $match: {
-                _id: { $lte: 10 },
+                _id: { $lte: 15 },
             },
         },
         {
@@ -380,7 +380,7 @@ exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
         },
         {
             $match: {
-                _id: { $lte: 10 },
+                _id: { $lte: 15 },
             },
         },
         {
@@ -508,7 +508,7 @@ exports.playerviewadminunilevelDirectCommissionWallet = async (req, res) => {
         },
         {
             $match: {
-                _id: { $lte: 10 },
+                _id: { $lte: 15 },
             },
         },
         {
