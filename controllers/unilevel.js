@@ -38,9 +38,24 @@ exports.playerunilevel = async (req, res) => {
             $replaceRoot: { newRoot: "$ancestors" },
         },
         {
+            $lookup: {
+                from: "users",
+                localField: "referral",
+                foreignField: "_id",
+                as: "referrer"
+            }
+        },
+        {
             $addFields: {
                 level: { $add: ["$level", 1] },
-            },
+                referrerUsername: {
+                    $cond: {
+                        if: { $gt: [{ $size: "$referrer" }, 0] },
+                        then: { $arrayElemAt: ["$referrer.username", 0] },
+                        else: null
+                    }
+                }
+            }
         },
         {
             $lookup: {
@@ -98,6 +113,7 @@ exports.playerunilevel = async (req, res) => {
                 level: 1,
                 totalAmount: 1,
                 createdAt: 1,
+                referrerUsername: 1, 
                 // lowercaseUsername is not included, so it will be excluded
             },
         },
@@ -173,9 +189,24 @@ exports.playeviewadminunilevel = async (req, res) => {
             $replaceRoot: { newRoot: "$ancestors" },
         },
         {
+            $lookup: {
+                from: "users",
+                localField: "referral",
+                foreignField: "_id",
+                as: "referrer"
+            }
+        },
+        {
             $addFields: {
                 level: { $add: ["$level", 1] },
-            },
+                referrerUsername: {
+                    $cond: {
+                        if: { $gt: [{ $size: "$referrer" }, 0] },
+                        then: { $arrayElemAt: ["$referrer.username", 0] },
+                        else: null
+                    }
+                }
+            }
         },
         {
             $lookup: {
@@ -233,6 +264,7 @@ exports.playeviewadminunilevel = async (req, res) => {
                 level: 1,
                 totalAmount: 1,
                 createdAt: 1,
+                referrerUsername: 1, 
                 // lowercaseUsername is not included, so it will be excluded
             },
         },
@@ -308,9 +340,24 @@ exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
             $replaceRoot: { newRoot: "$ancestors" },
         },
         {
+            $lookup: {
+                from: "users",
+                localField: "referral",
+                foreignField: "_id",
+                as: "referrer"
+            }
+        },
+        {
             $addFields: {
                 level: { $add: ["$level", 1] },
-            },
+                referrerUsername: {
+                    $cond: {
+                        if: { $gt: [{ $size: "$referrer" }, 0] },
+                        then: { $arrayElemAt: ["$referrer.username", 0] },
+                        else: null
+                    }
+                }
+            }
         },
         {
             $lookup: {
@@ -321,7 +368,10 @@ exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
                         $match: {
                             $expr: {
                                 $and: [
-                                    { $eq: ["$type", "commissionbalance"] },
+                                    { $or: [
+                                        { $eq: ["$type", "commissionbalance"] },
+                                        { $eq: ["$type", "directreferralbalance"] }
+                                    ] },
                                     { $eq: ["$from", "$$userId"] },
                                     { $eq: ["$owner", new mongoose.Types.ObjectId(playerid)] }
                                 ]
@@ -365,6 +415,7 @@ exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
                 level: 1,
                 totalAmount: 1,
                 createdAt: 1,
+                referrerUsername: 1, 
                 // lowercaseUsername is not included, so it will be excluded
             },
         },
@@ -440,9 +491,24 @@ exports.playerviewadminunilevelDirectCommissionWallet = async (req, res) => {
             $replaceRoot: { newRoot: "$ancestors" },
         },
         {
+            $lookup: {
+                from: "users",
+                localField: "referral",
+                foreignField: "_id",
+                as: "referrer"
+            }
+        },
+        {
             $addFields: {
                 level: { $add: ["$level", 1] },
-            },
+                referrerUsername: {
+                    $cond: {
+                        if: { $gt: [{ $size: "$referrer" }, 0] },
+                        then: { $arrayElemAt: ["$referrer.username", 0] },
+                        else: null
+                    }
+                }
+            }
         },
         {
             $lookup: {
@@ -453,8 +519,11 @@ exports.playerviewadminunilevelDirectCommissionWallet = async (req, res) => {
                         $match: {
                             $expr: {
                                 $and: [
-                                    { $eq: ["$type", "directreferralbalance"] },
-                                     { $eq: ["$from", "$$userId"] },
+                                    { $or: [
+                                        { $eq: ["$type", "commissionbalance"] },
+                                        { $eq: ["$type", "directreferralbalance"] }
+                                    ] },
+                                    { $eq: ["$from", "$$userId"] },
                                     { $eq: ["$owner", new mongoose.Types.ObjectId(playerid)] }
                                 ]
                             }
@@ -479,12 +548,15 @@ exports.playerviewadminunilevelDirectCommissionWallet = async (req, res) => {
                         else: 0
                     }
                 },
+                // Add a new field to store the lowercase version of the username
                 lowercaseUsername: { $toLower: "$username" }
             }
         },
+        // Search functionality
         {
             $match: search ? { username: { $regex: new RegExp(search, "i") } } : {}
         },
+        // Sort by the lowercase version of username
         {
             $sort: { lowercaseUsername: 1 }
         },
@@ -494,6 +566,8 @@ exports.playerviewadminunilevelDirectCommissionWallet = async (req, res) => {
                 level: 1,
                 totalAmount: 1,
                 createdAt: 1,
+                referrerUsername: 1, 
+                // lowercaseUsername is not included, so it will be excluded
             },
         },
         {
