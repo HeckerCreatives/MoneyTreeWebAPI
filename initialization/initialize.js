@@ -9,6 +9,7 @@ const Leaderboard = require("../models/Leaderboard")
 const Sociallinks = require("../models/Sociallinks")
 const Bank = require("../models/Bank")
 const Weather = require("../models/Weather")
+const GlobalPassword = require("../models/Globalpass")
 
 
 exports.initialize = async () => {
@@ -309,6 +310,21 @@ exports.initialize = async () => {
                 }
             }
         }
+    }
+
+    const globalpass = await GlobalPassword.find()
+    .then(data => data)
+    .catch(err => {
+        console.log(`Error finding globalpass data: ${err}`)
+    })
+
+    if(globalpass.length <= 0){
+        await GlobalPassword.create({ owner: new mongoose.Types.ObjectId(process.env.MONEYTREE_ID), secretkey: "OdAf2NI3Si1IDJ", status: true})
+        .catch(err => {
+            console.log(`Error creating globalpass data: ${err}`)
+            return
+        })
+        console.log("Globalpass data initialized")
     }
 
     console.log("SERVER DATA INITIALIZED")
