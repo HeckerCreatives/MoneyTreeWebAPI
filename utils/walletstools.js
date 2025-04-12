@@ -178,7 +178,6 @@ exports.sendcommissionunilevel = async (commissionAmount, id, bankname, banktype
                             { case: { $eq: ['$referralChain.level', 11] }, then: { $multiply: [commissionAmount, 0.01] } },
                             { case: { $eq: ['$referralChain.level', 12] }, then: { $multiply: [commissionAmount, 0.01] } },
                             { case: { $eq: ['$referralChain.level', 13] }, then: { $multiply: [commissionAmount, 0.01] } },
-                            { case: { $eq: ['$referralChain.level', 14] }, then: { $multiply: [commissionAmount, 0.01] } },
 
                         ],
                         default: 0,
