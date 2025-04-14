@@ -30,9 +30,6 @@ exports.editbank = async (req, res) => {
         return res.status(400).json({ message: "failed", data: "Incomplete form data."})
     }
 
-    if (parseFloat(min) > parseFloat(max)) {
-        return res.status(400).json({ message: "failed", data: "Min value cannot be greater than Max value." });
-    }
     if (parseFloat(min) < 0 || parseFloat(max) < 0 || parseFloat(profit) < 0 || parseFloat(duration) < 0) {
         return res.status(400).json({ message: "failed", data: "Values cannot be negative." });
     }
