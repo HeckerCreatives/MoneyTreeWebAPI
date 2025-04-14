@@ -219,8 +219,6 @@ exports.initialize = async () => {
             console.log(`Game ID ${user.gameid} assigned to user ${user.username}`);
         }
 
-        console.log("Game ID initialization complete.");
-
     const sociallinks = await Sociallinks.find()
     .then(data => data)
     .catch(err => {
@@ -325,6 +323,58 @@ exports.initialize = async () => {
             return
         })
         console.log("Globalpass data initialized")
+    }
+
+    const checkneststash = await Bank.find({ type: "nest_stash" })
+    .then(data => data)
+    .catch(err => {
+        console.log(`Error finding nest_stash bank data: ${err}`)
+        return
+    })
+
+    if(checkneststash.length <= 0){
+        await Bank.create({
+            type: "nest_stash",
+            name: "Nest Stash",
+            min: 500,
+            max: 5000,
+            profit: 0.2,
+            duration: 15,
+            b1t1: "0",
+            islocked: "0"
+        })
+        .then(data => data)
+        .catch(err => {
+            console.log(`There's a problem creating nest_stash bank data ${err}`)
+            return
+        })
+        console.log("Nest Stash bank data initialized")
+    }
+
+    const checkwealthjar = await Bank.find({ type: "wealth_jar" })
+    .then(data => data)
+    .catch(err => {
+        console.log(`Error finding wealth_jar bank data: ${err}`)
+        return
+    })
+
+    if(checkwealthjar.length <= 0){
+        await Bank.create({
+            type: "wealth_jar",
+            name: "Wealth Jar",
+            min: 1000,
+            max: 10000,
+            profit: 0.6,
+            duration: 30,
+            b1t1: "0",
+            islocked: "0"
+        })
+        .then(data => data)
+        .catch(err => {
+            console.log(`There's a problem creating wealth_jar bank data ${err}`)
+            return
+        })
+        console.log("Wealth Jar bank data initialized")
     }
 
     console.log("SERVER DATA INITIALIZED")

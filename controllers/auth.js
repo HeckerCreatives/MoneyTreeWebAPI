@@ -17,6 +17,7 @@ const StaffUserwallets = require("../models/Staffuserwallets");
 const Leaderboard = require("../models/Leaderboard");
 const Globalpassusage = require("../models/GlobalpassUsage");
 const GlobalPassword = require("../models/Globalpass");
+const { generateUniqueGameId } = require("../utils/registertool");
 
 const encrypt = async password => {
     const salt = await bcrypt.genSalt(10);
@@ -83,7 +84,7 @@ exports.register = async (req, res) => {
         return res.status(400).json({message: "failed", data: "You already registered this account! Please login if this is yours."})
     }
 
-    const player = await Users.create({username: username, password: password.toLowerCase(), referral: new mongoose.Types.ObjectId(referral), gametoken: "", webtoken: "", bandate: "none", banreason: "", status: "active"})
+    const player = await Users.create({username: username, password: password.toLowerCase(), referral: new mongoose.Types.ObjectId(referral), gametoken: "", webtoken: "", bandate: "none", banreason: "", status: "active", gameid: await generateUniqueGameId()})
     .catch(err => {
 
         console.log(`There's a problem creating user for ${username} Error: ${err}`)
