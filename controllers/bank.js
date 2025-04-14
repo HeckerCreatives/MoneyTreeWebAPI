@@ -38,6 +38,14 @@ exports.editbank = async (req, res) => {
         return res.status(400).json({ message: "failed", data: "b1t1 should only contain '1' and '0'." });
     }
 
+    if (parseFloat(min) < 500) {
+        return res.status(400).json({ 
+            message: "failed", 
+            data: "Minimum price value must be at least 500" 
+        });
+    }
+    
+
     await Bank.findOneAndUpdate(
         {
             _id: new mongoose.Types.ObjectId(bankid)
