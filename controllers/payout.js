@@ -23,6 +23,7 @@ exports.requestpayout = async (req, res) => {
         return res.status(400).json({ message: "failed", data: "There's a problem requesting your payout! Please try again later." })
     }
 
+
     const exist = await Payout.find({owner: new mongoose.Types.ObjectId(id), type: type, status: "processing"})
     .then(data => data)
 
@@ -32,22 +33,23 @@ exports.requestpayout = async (req, res) => {
 
         
         // Validate payout amounts based on payment method
-        if (paymentmethod === 'gotyme') {
+        if (type !== 'unilevel') {
+            if (paymentmethod === 'gotyme') {
             if (payoutvalue < 500) {
                 return res.status(400).json({ 
-                    message: "failed", 
-                    data: "Gotyme payout value must be at least 500" 
+                message: "failed", 
+                data: "Gotyme payout value must be at least 500" 
                 });
             }
-        } else if (paymentmethod === 'gcash') {
+            } else if (paymentmethod === 'gcash') {
             if (payoutvalue < 500 || payoutvalue > 5000) {
                 return res.status(400).json({ 
-                    message: "failed", 
-                    data: "GCash payout value must be between 500 and 5000" 
+                message: "failed", 
+                data: "GCash payout value must be between 500 and 5000" 
                 });
             }
+            }
         }
-        
         
         if (type === 'referral') {
 
@@ -285,8 +287,6 @@ exports.getpayoutlist = async (req, res) => {
 
     try {
         const payoutlistResult = await Payout.aggregate(payoutpipelinelist);
-
-        console.log(payoutlistResult[0].data)
 
         const totalPages = payoutlistResult[0].totalPages[0]?.count || 0;
         const pages = Math.ceil(totalPages / pageOptions.limit);
