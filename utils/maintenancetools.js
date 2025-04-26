@@ -11,7 +11,7 @@ exports.checkmaintenance = async (type) => {
         return "failed"
     })
 
-    if (mainte.value == "0"){
+    if (mainte.value == "1"){
         return "maintenance"
     }
     else{
