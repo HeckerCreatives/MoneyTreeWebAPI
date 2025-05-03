@@ -373,9 +373,10 @@ exports.getplayerwallethistoryforadmin = async (req, res) => {
     }
 
     history.forEach(historydata => {
-        const {username, type, amount, fromusername, createdAt} = historydata
+        const {username, type, amount, fromusername, createdAt, _id} = historydata
 
         data.history.push({
+            id: _id,
             username: username,
             type: type,
             amount: amount,
