@@ -197,23 +197,23 @@ exports.claimtotalincome = async (req, res) => {
         return res.status(400).json({message: "failed", data: "You still didn't reach the limit of this bank! keep playing and reach the limit in order to claim"})
     }
 
-    await addwallet("gamebalance", bankdb.totalaccumulated, id)
+    await addwallet("gamebalance", bankdb.templimit, id)
 
     await Inventory.findOneAndDelete({_id: new mongoose.Types.ObjectId(bankid)})
     .catch(async err => {
         console.log(`There's a problem getting the deleting bank data for ${username} bank id: ${bankid}. Error: ${err}`)
 
-        await reducewallet("gamebalance", bankdb.totalaccumulated, id)
+        await reducewallet("gamebalance", bankdb.templimit, id)
         
         return res.status(400).json({message: "bad-request", data: "There's a problem getting the finishing bank data! Please contact customer support"})
     })
 
-    const wallethistory = await addwallethistory(id, "gamebalance", bankdb.totalaccumulated, process.env.MONEYTREE_ID, bank.name, bank.type)
+    const wallethistory = await addwallethistory(id, "gamebalance", bankdb.templimit, process.env.MONEYTREE_ID, bank.name, bank.type)
 
     if (wallethistory.message != "success"){
         return res.status(400).json({message: "bad-request", data: "There's a problem processing your data. Please contact customer support"})
     }
-    await saveinventoryhistory(id, `${bank.name}`, `Claim ${bank.name}`, bankdb.totalaccumulated)
+    await saveinventoryhistory(id, `${bank.name}`, `Claim ${bank.name}`, bankdb.templimit)
 
     await addanalytics(id, wallethistory.data.transactionid, `gamebalance`, `Player ${username} claim ${bankdb.totalaccumulated} in Bank ${bankdb.type}`, bankdb.totalaccumulated)
 
