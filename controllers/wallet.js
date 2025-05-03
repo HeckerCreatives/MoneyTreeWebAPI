@@ -102,7 +102,7 @@ exports.edituserwalletforadmin = async (req, res) => {
         return res.status(404).json({ message: "bad-request", data: "Wallet not found" })
     }
 
-    const difference = parseFloat(amount) - history.amount;
+    const difference = parseFloat(amount) - wallet.amount;
 
     if (wallet.amount > 0) {
         await Wallethistory.create({
