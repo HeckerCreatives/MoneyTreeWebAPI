@@ -1,5 +1,5 @@
 const router = require("express").Router()
-const { requestpayout, getrequesthistoryplayer, processpayout, getpayoutlist, getpayouthistorysuperadmin, getpayouthistoryadmin, deletepayout, gettotalrequest } = require("../controllers/payout")
+const { requestpayout, getrequesthistoryplayer, processpayout, getpayoutlist, getpayouthistorysuperadmin, getpayouthistoryadmin, deletepayout, gettotalrequest, getrequesthistoryplayersuperadmin } = require("../controllers/payout")
 const { protectsuperadmin, protectplayer, protectadmin } = require("../middleware/middleware")
 
 router
@@ -9,6 +9,7 @@ router
     .get("/getpayoutlistadmin", protectadmin, getpayoutlist)
     .get("/getpayouthistoryadmin", protectadmin, getpayouthistorysuperadmin)
     .get("/gettotalrequest", protectsuperadmin, gettotalrequest)
+    .get("/getrequesthistoryplayersuperadmin", protectsuperadmin, getrequesthistoryplayersuperadmin)
     .post("/deletepayout", protectsuperadmin, deletepayout)
     .post("/requestpayout", protectplayer, requestpayout)
     .post("/processpayout", protectsuperadmin, processpayout)
