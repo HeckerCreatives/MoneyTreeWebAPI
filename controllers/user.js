@@ -59,6 +59,7 @@ exports.getuserdetailssuperadmin = async (req, res) => {
     const {userid} = req.query
 
     const details = await Users.findOne({_id: new mongoose.Types.ObjectId(userid)})
+    .populate("referral", "username")
     .then(data => data)
     .catch(err => {
 
@@ -73,7 +74,9 @@ exports.getuserdetailssuperadmin = async (req, res) => {
 
     const data = {
         username: details.username,
-        status: details.status
+        status: details.status,
+        referral: details.referral ? details.referral.username : "No Referral",
+        referralid: details.referral ? details.referral._id : '',
     }
 
     return res.json({message: "success", data: data})

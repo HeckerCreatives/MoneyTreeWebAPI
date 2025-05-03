@@ -1,4 +1,4 @@
-const { playerwallets, getplayerwalletforadmin } = require("../controllers/wallet")
+const { playerwallets, getplayerwalletforadmin, edituserwalletforadmin } = require("../controllers/wallet")
 const { protectplayer, protectsuperadmin } = require("../middleware/middleware")
 
 const router = require("express").Router()
@@ -6,6 +6,7 @@ const router = require("express").Router()
 router
  .get("/playerwallets", protectplayer, playerwallets)
  .get("/getplayerwalletforadmin", protectsuperadmin, getplayerwalletforadmin)
+ .post("/edituserwalletforadmin", protectsuperadmin, edituserwalletforadmin)
 
 
 

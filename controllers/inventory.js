@@ -537,3 +537,35 @@ exports.maxplayerinventorysuperadmin = async (req, res) => {
         return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support."});
     }
 }
+
+exports.deleteplayerinventorysuperadmin = async (req, res) => {
+    const {id, username} = req.user
+
+    const {bankid} = req.body
+    
+    try {    
+
+    
+        const bank = await Inventory.findOne({  _id: new mongoose.Types.ObjectId(bankid) });
+
+        if (!bank) {
+            return res.status(400).json({ message: 'failed', data: `There's a problem with the server! Please contact customer support.` });
+        }
+
+        await Inventory.findOneAndDelete({ _id: new mongoose.Types.ObjectId(bankid) })
+        .then(data => data)
+        .catch(err => {
+            console.log(`There's a problem getting the bank data for ${username}. Error: ${err}`)
+            
+            return res.status(400).json({message: "bad-request", data: "There's a problem getting the bank data! Please contact customer support"})
+        })
+
+        return res.status(200).json({ message: "success"});
+
+    } catch (error) {
+        console.error(error)
+
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support."});
+    }
+}
+
