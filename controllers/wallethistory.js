@@ -552,9 +552,6 @@ exports.editplayerwallethistoryforadmin = async (req, res) => {
             return res.status(400).json({ message: "failed", data: "Wallet history not found." });
         }
 
-        history.amount = parseFloat(amount);
-        await history.save();
-
         let newwallettype 
 
         if (history.type === "fiatbalance") {
@@ -568,7 +565,7 @@ exports.editplayerwallethistoryforadmin = async (req, res) => {
         }
 
         // get the current wallet balance of the user
-
+        
         const wallet = await Userwallets.findOne({ owner: history.owner, type: newwallettype });
         if (!wallet) {
             return res.status(400).json({ message: "failed", data: "Wallet not found." });
@@ -577,6 +574,7 @@ exports.editplayerwallethistoryforadmin = async (req, res) => {
         // increment or decrement the wallet balance based on the new amount
 
         const difference = parseFloat(amount) - history.amount;
+
         await Userwallets.findOneAndUpdate(
             { owner: history.owner, type: history.type },
             { $inc: { amount: difference } }
@@ -601,6 +599,8 @@ exports.editplayerwallethistoryforadmin = async (req, res) => {
             }
         )
     }
+    history.amount = parseFloat(amount);
+    await history.save();
 
 
         return res.status(200).json({ message: "success" });
