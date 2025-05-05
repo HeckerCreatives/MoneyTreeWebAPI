@@ -548,9 +548,27 @@ exports.deleteplayerinventorysuperadmin = async (req, res) => {
     
         const bank = await Inventory.findOne({  _id: new mongoose.Types.ObjectId(bankid) });
 
+        console.log(bank)
         if (!bank) {
             return res.status(400).json({ message: 'failed', data: `There's a problem with the server! Please contact customer support.` });
         }
+
+        const inventoryhistory = await Inventoryhistory.findOne({ 
+            owner: new mongoose.Types.ObjectId(bank.owner),
+            createdAt: {
+            $gte: new Date(bank.createdAt.getTime() - 10000), // 3 seconds before
+            $lte: new Date(bank.createdAt.getTime() + 10000)  // 3 seconds after
+            },
+            bankname: bank.bankname 
+        }).catch(err => {
+            console.log(`Failed to delete inventory history for ${username}, error: ${err}`)
+            return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        })
+
+        console.log(inventoryhistory)
+        if (!inventoryhistory) {
+            return res.status(400).json({ message: 'failed', data: `There's a problem with the server! Please contact customer support.` });
+        }        
 
         await Inventory.findOneAndDelete({ _id: new mongoose.Types.ObjectId(bankid) })
         .then(data => data)
@@ -558,6 +576,18 @@ exports.deleteplayerinventorysuperadmin = async (req, res) => {
             console.log(`There's a problem getting the bank data for ${username}. Error: ${err}`)
             
             return res.status(400).json({message: "bad-request", data: "There's a problem getting the bank data! Please contact customer support"})
+        })
+
+        await Inventoryhistory.findOneAndDelete({ 
+            owner: new mongoose.Types.ObjectId(bank.owner),
+            createdAt: {
+            $gte: new Date(bank.createdAt.getTime() - 10000), // 3 seconds before
+            $lte: new Date(bank.createdAt.getTime() + 10000)  // 3 seconds after
+            },
+            bankname: bank.bankname 
+        }).catch(err => {
+            console.log(`Failed to delete inventory history for ${username}, error: ${err}`)
+            return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
         })
 
         return res.status(200).json({ message: "success"});
@@ -568,4 +598,5 @@ exports.deleteplayerinventorysuperadmin = async (req, res) => {
         return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support."});
     }
 }
+
 
