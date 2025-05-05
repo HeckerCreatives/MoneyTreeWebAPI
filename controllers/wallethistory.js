@@ -591,7 +591,7 @@ exports.editplayerwallethistoryforadmin = async (req, res) => {
     if (history.type === "unilevelbalance" || history.type === "directreferralbalance") {
         await Userwallets.findOneAndUpdate(
             {
-                owner: new mongoose.Types.ObjectId(playerid),
+                owner: new mongoose.Types.ObjectId(history.owner),
                 type: "commissionbalance"
             },
             {
