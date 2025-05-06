@@ -478,7 +478,7 @@ exports.getinventoryhistoryuseradmin = async (req, res) => {
         }})
     }
 
-    const totalPages = await Inventoryhistory.countDocuments({owner: new mongoose.Types.ObjectId(userid), type: type})
+    const totalPages = await Inventoryhistory.countDocuments({owner: new mongoose.Types.ObjectId(userid),  type: { $regex: type, $options: "i" }})
     .then(data => data)
     .catch(err => {
 
