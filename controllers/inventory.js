@@ -600,3 +600,50 @@ exports.deleteplayerinventorysuperadmin = async (req, res) => {
 }
 
 
+exports.deleteplayerinventoryhistorysuperadmin = async (req, res) => {
+
+    const {id, username} = req.user
+
+    const {historyid} = req.body
+
+    if (!mongoose.Types.ObjectId.isValid(historyid)) {
+        return res.status(400).json({ message: 'Invalid History ID' });
+    }
+
+    const history = await Inventoryhistory.findOne({ _id: new mongoose.Types.ObjectId(historyid) })
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting the trainer data for ${username}. Error: ${err}`)
+        
+        return res.status(400).json({message: "bad-request", data: "There's a problem getting the trainer data! Please contact customer support"})
+    })
+
+    if (!history){
+        return res.status(400).json({message: "failed", data: "History not found"})
+    }
+
+    await Inventory.findOneAndDelete({ 
+        owner: new mongoose.Types.ObjectId(history.owner),
+        createdAt: {
+        $gte: new Date(history.createdAt.getTime() - 10000), // 3 seconds before
+        $lte: new Date(history.createdAt.getTime() + 10000)  // 3 seconds after
+        },
+        bankname: history.bankname
+    })
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting the trainer data for ${username}. Error: ${err}`)
+        
+        return res.status(400).json({message: "bad-request", data: "There's a problem getting the trainer data! Please contact customer support"})
+    })
+
+    await Inventoryhistory.findOneAndDelete({ _id: new mongoose.Types.ObjectId(historyid) })
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting the trainer data for ${username}. Error: ${err}`)
+        
+        return res.status(400).json({message: "bad-request", data: "There's a problem getting the trainer data! Please contact customer support"})
+    })
+
+    return res.status(200).json({ message: "success"});
+}

@@ -31,23 +31,21 @@ exports.requestpayout = async (req, res) => {
         return res.status(400).json({ message: "failed", data: "There's an existing request! Please wait for it to be processed before requesting another payout." })
     }
 
-        
-        // Validate payout amounts based on payment method
         if (type !== 'unilevel') {
             if (paymentmethod === 'gotyme') {
-            if (payoutvalue < 500) {
-                return res.status(400).json({ 
-                message: "failed", 
-                data: "Gotyme payout value must be at least 500" 
-                });
-            }
+                if (payoutvalue < 500) {
+                    return res.status(400).json({ 
+                    message: "failed", 
+                    data: "Gotyme payout value must be at least 500" 
+                    });
+                }
             } else if (paymentmethod === 'gcash') {
-            if (payoutvalue < 500 || payoutvalue > 5000) {
-                return res.status(400).json({ 
-                message: "failed", 
-                data: "GCash payout value must be between 500 and 5000" 
-                });
-            }
+                if (payoutvalue < 500 || payoutvalue > 5000) {
+                    return res.status(400).json({ 
+                    message: "failed", 
+                    data: "GCash payout value must be between 500 and 5000" 
+                    });
+                }
             }
         }
         
