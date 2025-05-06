@@ -498,6 +498,7 @@ exports.getinventoryhistoryuseradmin = async (req, res) => {
         const {createdAt,  bankname, amount, type} = tempdata
 
         data.history.push({
+            id: tempdata._id,
             bankname: bankname,
             type: type,
             amount: amount,
@@ -548,7 +549,7 @@ exports.deleteplayerinventorysuperadmin = async (req, res) => {
     
         const bank = await Inventory.findOne({  _id: new mongoose.Types.ObjectId(bankid) });
 
-        console.log(bank)
+        
         if (!bank) {
             return res.status(400).json({ message: 'failed', data: `There's a problem with the server! Please contact customer support.` });
         }

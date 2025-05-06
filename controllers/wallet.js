@@ -62,8 +62,7 @@ exports.edituserwalletforadmin = async (req, res) => {
 
     const { playerid, wallettype, amount } = req.body
 
-    // wallettypes are unilevelwallet, directwallet, fiatbalance and gamebalance
-    if (!playerid || !wallettype || !amount) {
+    if (!playerid || !wallettype) {
         return res.status(400).json({ message: "failed", data: "Incomplete form data." });
     }
 

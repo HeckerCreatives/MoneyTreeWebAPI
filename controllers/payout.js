@@ -23,9 +23,21 @@ exports.requestpayout = async (req, res) => {
         return res.status(400).json({ message: "failed", data: "There's a problem requesting your payout! Please try again later." })
     }
 
+    let walletype
 
-    const exist = await Payout.find({owner: new mongoose.Types.ObjectId(id), type: type, status: "processing"})
+    if (type === 'referral') {
+        walletype = 'directreferralbalance'
+    }
+    else if (type === 'unilevel') {
+        walletype = 'unilevelbalance'
+    }
+    else if (type === 'gamebalance') {
+        walletype = 'gamebalance'
+    }
+
+    const exist = await Payout.find({owner: new mongoose.Types.ObjectId(id), type: walletype, status: "processing"})
     .then(data => data)
+
 
     if (exist.length > 0){
         return res.status(400).json({ message: "failed", data: "There's an existing request! Please wait for it to be processed before requesting another payout." })
