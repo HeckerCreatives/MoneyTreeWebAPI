@@ -186,6 +186,156 @@ exports.getrequesthistoryplayer = async (req, res) => {
     return res.json({message: "success", data: data})
 }
 
+// exports.getpayoutlist = async (req, res) => {
+//     const { id, username } = req.user;
+//     const { methodtype, date, type, page, limit, searchUsername } = req.query;
+
+//     const pageOptions = {
+//         page: parseInt(page) || 0,
+//         limit: parseInt(limit) || 10
+//     };
+
+//     const payoutpipelinelist = [
+//         {
+//             $match: {
+//                 status: "In review",
+//                 type: type
+//             }
+//         },
+//         {
+//             $lookup: {
+//                 from: "users",
+//                 localField: "owner",
+//                 foreignField: "_id",
+//                 as: "ownerinfo"
+//             }
+//         },
+//         {
+//             $unwind: "$ownerinfo"
+//         },
+//         {
+//             $lookup: {
+//                 from: "userdetails",
+//                 localField: "owner",
+//                 foreignField: "owner",
+//                 as: "userdetails"
+//             }
+//         },
+//         {
+//             $unwind: "$userdetails"
+//         }
+//     ];
+
+//     // Conditionally add $match stage for username if searchUsername is provided
+//     if (searchUsername) {
+//         payoutpipelinelist.push({
+//             $match: {
+//                 "ownerinfo.username": { $regex: new RegExp(searchUsername, 'i') }
+//             }
+//         });
+//     }
+
+//     if (date) {
+//         payoutpipelinelist.splice(1, 0, {
+//             $match: {
+//                 createdAt: {
+//                     $gte: new Date(date + "T00:00:00Z"),
+//                     $lt: new Date(new Date(date + "T00:00:00Z").getTime() + 24 * 60 * 60 * 1000)
+//                 }
+//             }
+//         });
+//     }
+
+//     if (methodtype) {
+//         payoutpipelinelist.splice(1, 0, {
+//             $match: {
+//                 "paymentmethod": methodtype
+//             }
+//         });
+//     }
+
+//     payoutpipelinelist.push({
+//         $sort: {
+//             createdAt: -1
+//         }
+//     })
+
+//     payoutpipelinelist.push(
+//         {
+//             $facet: {
+//                 totalPages: [
+//                     { $count: "count" }
+//                 ],
+//                 data: [
+//                     {
+//                         $project: {
+//                             _id: 1,
+//                             status: 1,
+//                             value: 1,
+//                             type: 1,
+//                             username: "$ownerinfo.username",
+//                             userid: "$ownerinfo._id",
+//                             firstname: "$userdetails.firstname",
+//                             lastname: "$userdetails.lastname",
+//                             phonenumber: "$userdetails.phonenumber",
+//                             paymentmethod: 1,
+//                             accountnumber: 1,
+//                             accountname: 1,
+//                             createdAt: 1
+//                         }
+//                     },
+//                     {
+//                         $skip: pageOptions.page * pageOptions.limit
+//                     },
+//                     {
+//                         $limit: pageOptions.limit
+//                     }
+//                 ]
+//             }
+//         }
+//     );
+
+//     try {
+//         const payoutlistResult = await Payout.aggregate(payoutpipelinelist);
+
+//         const totalPages = payoutlistResult[0].totalPages[0]?.count || 0;
+//         const pages = Math.ceil(totalPages / pageOptions.limit);
+
+//         const data = {
+//             payoutlist: [],
+//             totalPages: pages
+//         };
+
+//         payoutlistResult[0].data.forEach(valuedata => {
+//             const { _id, owner, status, value, type, username, firstname, lastname, accountnumber, accountname, paymentmethod, userid, createdAt, phonenumber } = valuedata;
+
+//             data.payoutlist.push({
+//                 id: _id,
+//                 owner: owner,
+//                 username: username,
+//                 userid: userid,
+//                 firstname: firstname,
+//                 lastname: lastname,
+//                 paymentmethod: paymentmethod,
+//                 accountnumber: accountnumber,
+//                 accountname: accountname,
+//                 grossamount: value,
+//                 withdrawalfee: value * 0.10,
+//                 netamount: value - (value * 0.10),
+//                 status: status == "processing" ? "In Review" : status,
+//                 type: type,
+//                 createdAt: createdAt,
+//                 phonenumber: phonenumber
+//             });
+//         });
+
+//         return res.json({ message: "success", data: data });
+//     } catch (err) {
+//         console.log(`Error processing payout list for ${username}, error: ${err}`);
+//         return res.status(400).json({ message: "bad-request", data: "There's a problem processing your request. Please contact customer support." });
+//     }
+// }
+
 exports.getpayoutlist = async (req, res) => {
     const { id, username } = req.user;
     const { methodtype, date, type, page, limit, searchUsername } = req.query;
@@ -210,9 +360,7 @@ exports.getpayoutlist = async (req, res) => {
                 as: "ownerinfo"
             }
         },
-        {
-            $unwind: "$ownerinfo"
-        },
+        { $unwind: "$ownerinfo" },
         {
             $lookup: {
                 from: "userdetails",
@@ -221,20 +369,10 @@ exports.getpayoutlist = async (req, res) => {
                 as: "userdetails"
             }
         },
-        {
-            $unwind: "$userdetails"
-        }
+        { $unwind: "$userdetails" }
     ];
 
-    // Conditionally add $match stage for username if searchUsername is provided
-    if (searchUsername) {
-        payoutpipelinelist.push({
-            $match: {
-                "ownerinfo.username": { $regex: new RegExp(searchUsername, 'i') }
-            }
-        });
-    }
-
+    // Add date filter
     if (date) {
         payoutpipelinelist.splice(1, 0, {
             $match: {
@@ -246,21 +384,26 @@ exports.getpayoutlist = async (req, res) => {
         });
     }
 
-    if (methodtype) {
+    // Add payment method filter unless it's "all"
+    if (methodtype && methodtype.toLowerCase() !== "all") {
         payoutpipelinelist.splice(1, 0, {
             $match: {
-                "paymentmethod": methodtype
+                paymentmethod: methodtype
             }
         });
     }
 
-    payoutpipelinelist.push({
-        $sort: {
-            createdAt: -1
-        }
-    })
+    // Add username search filter
+    if (searchUsername) {
+        payoutpipelinelist.push({
+            $match: {
+                "ownerinfo.username": { $regex: new RegExp(searchUsername, 'i') }
+            }
+        });
+    }
 
     payoutpipelinelist.push(
+        { $sort: { createdAt: -1 } },
         {
             $facet: {
                 totalPages: [
@@ -284,12 +427,8 @@ exports.getpayoutlist = async (req, res) => {
                             createdAt: 1
                         }
                     },
-                    {
-                        $skip: pageOptions.page * pageOptions.limit
-                    },
-                    {
-                        $limit: pageOptions.limit
-                    }
+                    { $skip: pageOptions.page * pageOptions.limit },
+                    { $limit: pageOptions.limit }
                 ]
             }
         }
@@ -298,43 +437,64 @@ exports.getpayoutlist = async (req, res) => {
     try {
         const payoutlistResult = await Payout.aggregate(payoutpipelinelist);
 
-        const totalPages = payoutlistResult[0].totalPages[0]?.count || 0;
-        const pages = Math.ceil(totalPages / pageOptions.limit);
+        const totalCount = payoutlistResult[0].totalPages[0]?.count || 0;
+        const totalPages = Math.ceil(totalCount / pageOptions.limit);
 
         const data = {
             payoutlist: [],
-            totalPages: pages
+            totalPages: totalPages
         };
 
         payoutlistResult[0].data.forEach(valuedata => {
-            const { _id, owner, status, value, type, username, firstname, lastname, accountnumber, accountname, paymentmethod, userid, createdAt, phonenumber } = valuedata;
+            const {
+                _id,
+                status,
+                value,
+                type,
+                username,
+                firstname,
+                lastname,
+                phonenumber,
+                paymentmethod,
+                accountnumber,
+                accountname,
+                userid,
+                createdAt
+            } = valuedata;
+
+            const withdrawalFee = value * 0.10;
+            const netAmount = value - withdrawalFee;
 
             data.payoutlist.push({
                 id: _id,
-                owner: owner,
-                username: username,
-                userid: userid,
-                firstname: firstname,
-                lastname: lastname,
-                paymentmethod: paymentmethod,
-                accountnumber: accountnumber,
-                accountname: accountname,
+                owner: id,
+                username,
+                userid,
+                firstname,
+                lastname,
+                paymentmethod,
+                accountnumber,
+                accountname,
                 grossamount: value,
-                withdrawalfee: value * 0.10,
-                netamount: value - (value * 0.10),
-                status: status == "processing" ? "In Review" : status,
-                type: type,
-                createdAt: createdAt,
-                phonenumber: phonenumber
+                withdrawalfee: withdrawalFee,
+                netamount: netAmount,
+                status: status === "processing" ? "In Review" : status,
+                type,
+                createdAt,
+                phonenumber
             });
         });
 
         return res.json({ message: "success", data: data });
     } catch (err) {
         console.log(`Error processing payout list for ${username}, error: ${err}`);
-        return res.status(400).json({ message: "bad-request", data: "There's a problem processing your request. Please contact customer support." });
+        return res.status(400).json({
+            message: "bad-request",
+            data: "There's a problem processing your request. Please contact customer support."
+        });
     }
-}
+};
+
 
 exports.getpayouthistorysuperadmin = async (req, res) => {
     const { id, username } = req.user;
@@ -571,7 +731,7 @@ exports.processpayout = async (req, res) => {
     })
 
     if (payoutdata.status != "processing"){
-        return res.status(401).json({ message: 'failed', data: `You already processed this payout` })
+        return res.status(400).json({ message: 'failed', data: `You already processed this payout` })
     }
 
     await Payout.findOneAndUpdate({_id: new mongoose.Types.ObjectId(payoutid)}, {status: status, processby: new mongoose.Types.ObjectId(id)}, {new: true})
@@ -748,9 +908,10 @@ exports.getrequesthistoryplayersuperadmin = async (req, res) => {
     }
 
     payouthistory.forEach(valuedata => {
-        const {owner, processby, status, value, type, createdAt} = valuedata
+        const {owner, processby, status, value, type, createdAt, _id} = valuedata
 
         data.history.push({
+            id: _id,
             date: createdAt,
             grossamount: type === 'gamebalance' ? value : value,
             withdrawalfee: type === 'gamebalance' ? value * 0.10 : 0,
