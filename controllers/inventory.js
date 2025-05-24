@@ -217,7 +217,8 @@ exports.claimtotalincome = async (req, res) => {
     await saveinventoryhistory(id, `${bank.name}`, `Claim ${bank.name}`, bankdb.totalincome)
 
     await addanalytics(id, wallethistory.data.transactionid, `gamebalance`, `Player ${username} claim ${bankdb.totalaccumulated} in Bank ${bankdb.type}`, bankdb.totalaccumulated)
-
+    await Dailyclaim.deleteMany({ owner: new mongoose.Types.ObjectId(id), inventory: new mongoose.Types.ObjectId(bankid) })
+    
     return res.json({message: "success"})
 }
 
