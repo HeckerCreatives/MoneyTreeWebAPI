@@ -751,6 +751,7 @@ exports.dailyclaimhistorysa = async (req, res) => {
             const createdAt = tempdata.createdAt;
 
             data.history.push({
+                historyid: tempdata._id,
                 bankname: bankname,
                 type: type,
                 amount: amount,
