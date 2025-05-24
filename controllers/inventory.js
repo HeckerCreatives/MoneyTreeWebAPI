@@ -9,6 +9,7 @@ const Inventoryhistory = require("../models/Inventoryhistory")
 const { addwallethistory } = require("../utils/wallethistorytools")
 const Maintenance = require("../models/Maintenance")
 const Bank = require("../models/Bank")
+const Dailyclaim = require("../models/Dailyclaim")
 
 exports.buybank = async (req, res) => {
     const {id, username} = req.user
@@ -647,4 +648,174 @@ exports.deleteplayerinventoryhistorysuperadmin = async (req, res) => {
     })
 
     return res.status(200).json({ message: "success"});
+}
+
+exports.dailyclaimhistory = async (req, res) => {
+    const { id, username } = req.user;
+    const { page, limit } = req.query;
+
+    const pageOptions = {
+        page: parseInt(page) || 0,
+        limit: parseInt(limit) || 10
+    };
+
+    try {
+        const history = await Dailyclaim.find({ owner: new mongoose.Types.ObjectId(id) })
+            .populate('inventory')
+            .skip(pageOptions.page * pageOptions.limit)
+            .limit(pageOptions.limit)
+            .sort({ 'createdAt': -1 });
+
+        if (!history || history.length === 0) {
+            return res.json({
+                message: "success",
+                data: {
+                    history: [],
+                    totalpages: 0
+                }
+            });
+        }
+
+        const totalPages = await Dailyclaim.countDocuments({ owner: new mongoose.Types.ObjectId(id) });
+        const pages = Math.ceil(totalPages / pageOptions.limit);
+
+        const data = {
+            history: [],
+            totalpages: pages
+        };
+
+        history.forEach(tempdata => {
+            // Get values from Dailyclaim and populated inventory
+            const bankname = tempdata.inventory?.bankname || "Unknown";
+            const type = tempdata.inventory?.type || "Unknown";
+            const amount = tempdata.amount;
+            const createdAt = tempdata.createdAt;
+
+            data.history.push({
+                bankname: bankname,
+                type: type,
+                amount: amount,
+                createdAt: createdAt
+            });
+        });
+
+        return res.json({ message: "success", data: data });
+    } catch (err) {
+        console.log(`There's a problem getting the daily claim history of ${username}. Error: ${err}`);
+        return res.status(400).json({
+            message: "bad-request",
+            data: "There's a problem getting the daily claim history. Please contact customer support."
+        });
+    }
+};
+
+exports.dailyclaimhistorysa = async (req, res) => {
+    const { id, username } = req.user;
+    const { playerid, page, limit } = req.query;
+
+    const pageOptions = {
+        page: parseInt(page) || 0,
+        limit: parseInt(limit) || 10
+    };
+
+    try {
+        const history = await Dailyclaim.find({ owner: new mongoose.Types.ObjectId(playerid) })
+            .populate('inventory')
+            .skip(pageOptions.page * pageOptions.limit)
+            .limit(pageOptions.limit)
+            .sort({ 'createdAt': -1 });
+
+        if (!history || history.length === 0) {
+            return res.json({
+                message: "success",
+                data: {
+                    history: [],
+                    totalpages: 0
+                }
+            });
+        }
+
+        const totalPages = await Dailyclaim.countDocuments({ owner: new mongoose.Types.ObjectId(playerid) });
+        const pages = Math.ceil(totalPages / pageOptions.limit);
+
+        const data = {
+            history: [],
+            totalpages: pages
+        };
+
+        history.forEach(tempdata => {
+            // Get values from Dailyclaim and populated inventory
+            const bankname = tempdata.inventory?.bankname || "Unknown";
+            const type = tempdata.inventory?.type || "Unknown";
+            const amount = tempdata.amount;
+            const createdAt = tempdata.createdAt;
+
+            data.history.push({
+                bankname: bankname,
+                type: type,
+                amount: amount,
+                createdAt: createdAt
+            });
+        });
+
+        return res.json({ message: "success", data: data });
+    } catch (err) {
+        console.log(`There's a problem getting the daily claim history of ${username}. Error: ${err}`);
+        return res.status(400).json({
+            message: "bad-request",
+            data: "There's a problem getting the daily claim history. Please contact customer support."
+        });
+    }
+};
+
+exports.deletedailyclaimhistorysa = async (req, res) => {
+    const { id, username } = req.user;
+    const { historyid } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(historyid)) {
+        return res.status(400).json({ message: 'Invalid History ID' });
+    }
+
+    const history = await Dailyclaim.findOne({ _id: new mongoose.Types.ObjectId(historyid) })
+        .then(data => data)
+        .catch(err => {
+            console.log(`There's a problem getting the trainer data for ${username}. Error: ${err}`)
+
+            return res.status(400).json({ message: "bad-request", data: "There's a problem getting the trainer data! Please contact customer support" })
+        })
+
+    if (!history) {
+        return res.status(400).json({ message: "failed", data: "History not found" })
+    }
+
+    const inventory = await Inventory.findOne({ _id: new mongoose.Types.ObjectId(history.inventory) })
+        .then(data => data)
+        .catch(err => {
+            console.log(`There's a problem getting the trainer data for ${username}. Error: ${err}`)
+
+            return res.status(400).json({ message: "bad-request", data: "There's a problem getting the trainer data! Please contact customer support" })
+        })
+
+    if (!inventory) {
+        return res.status(400).json({ message: "failed", data: "Inventory not found" })
+    }
+
+    inventory.totalaccumulated = Number(inventory.totalaccumulated) - Number(history.amount)
+
+    await inventory.save()
+        .then(data => data)
+        .catch(err => {
+            console.log(`There's a problem getting the trainer data for ${username}. Error: ${err}`)
+
+            return res.status(400).json({ message: "bad-request", data: "There's a problem getting the trainer data! Please contact customer support" })
+        })
+    await Dailyclaim.findOneAndDelete({ _id: new mongoose.Types.ObjectId(historyid) })
+        .then(data => data)
+        .catch(err => {
+            console.log(`There's a problem getting the trainer data for ${username}. Error: ${err}`)
+
+            return res.status(400).json({ message: "bad-request", data: "There's a problem getting the trainer data! Please contact customer support" })
+        })
+
+    return res.status(200).json({ message: "success" });
 }
