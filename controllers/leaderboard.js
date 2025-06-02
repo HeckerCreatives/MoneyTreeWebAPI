@@ -148,7 +148,9 @@ exports.getLeaderboardDates = async (req, res) => {
         const dates = await LeaderboardHistory.aggregate([
             {
             $group: {
-                _id: { $substr: ["$eventname", 0, -1] }
+                _id: { $substr: ["$eventname", 0, -1] },
+                index: { $first: "$index" }
+            
             }
             },
             { $sort: { index: 1 } } // Sort by eventname in ascending order
