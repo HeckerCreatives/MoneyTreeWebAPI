@@ -8,6 +8,13 @@ exports.resetleaderboard = async (req, res) => {
         // Fetch the current leaderboard data
         const currentLeaderboard = await Leaderboard.find({});
         const philippinesTime = moment.tz('Asia/Manila').format('YYYY-MM-DD HH:mm:ss');
+        // find last entry in the leaderboard history
+        const lastEntry = await LeaderboardHistory.findOne({}).sort({ date: -1 }).limit(1);
+        let index = 1
+        if (lastEntry) {
+            // If there is a last entry, set the index to the next number
+            index = lastEntry.index + 1;
+        }
 
         if (currentLeaderboard.length > 0) {
             // Insert the fetched data into the leaderboard history with the current date
@@ -15,7 +22,9 @@ exports.resetleaderboard = async (req, res) => {
                 const { _id, ...rest } = entry.toObject(); // Remove the _id field
                 return {
                     ...rest,
-                    date: philippinesTime
+                    date: philippinesTime,
+                    index: index,
+                    eventname: `Event Reset #${index} - ${moment().format('YYYY-MM-DD')}`,
                 };
             });
             await LeaderboardHistory.insertMany(historyData);
