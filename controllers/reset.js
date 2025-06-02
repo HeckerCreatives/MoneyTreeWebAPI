@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const Leaderboard = require('../models/Leaderboard');
 const LeaderboardHistory = require('../models/Leaderboardhistory');
 const moment = require('moment-timezone');
+const Evententrylimit = require('../models/Evententrylimit');
+const Playerevententrylimit = require('../models/Playerevententrylimit');
 
 exports.resetleaderboard = async (req, res) => {
     try {
@@ -9,6 +11,12 @@ exports.resetleaderboard = async (req, res) => {
         const currentLeaderboard = await Leaderboard.find({});
         const philippinesTime = moment.tz('Asia/Manila').format('YYYY-MM-DD HH:mm:ss');
         // find last entry in the leaderboard history
+        let entrylimit = 2;
+            const evententrylimit = await Evententrylimit.findOne({});
+        if (evententrylimit && evententrylimit.limit) {
+            entrylimit = evententrylimit.limit;
+        }
+
         const lastEntry = await LeaderboardHistory.findOne({}).sort({ date: -1 }).limit(1);
         let index = 1
         if (lastEntry) {
@@ -32,7 +40,10 @@ exports.resetleaderboard = async (req, res) => {
 
         // Delete the current leaderboard data
         await Leaderboard.updateMany({}, { $set: { amount: 0 } });
-
+          await Playerevententrylimit.updateMany({}, {limit: entrylimit})
+          .catch(err => {
+            console.log(err)
+          })
         return res.status(200).json({ message: "success", data: "Leaderboard has been reset and previous data has been archived." });
     } catch (err) {
         console.log(`There's a problem resetting the leaderboard. Error: ${err}`);
