@@ -1,15 +1,25 @@
 const { default: mongoose } = require("mongoose");
 const Leaderboard = require("../models/Leaderboard");
 const LeaderboardHistory = require("../models/Leaderboardhistory");
+const Leaderboardlimit = require("../models/Leaderboardlimit");
 
 
 exports.getLeaderboard = async (req, res) => {
     const { id, username } = req.user;
 
+    
+    const templimit = await Leaderboardlimit.find()
+
+    let finallimit = 10
+
+    if (templimit.length > 0){
+        finallimit = templimit[0].limit
+    }
+
     await Leaderboard.find({})
         .populate('owner')
         .sort({ amount: -1 })
-        .limit(10)
+        .limit(finallimit)
         .then(async (top10) => {
             const user = await Leaderboard.findOne({ owner: new mongoose.Types.ObjectId(id) });
 
@@ -41,16 +51,25 @@ exports.getLeaderboard = async (req, res) => {
         });
 };
 
-
 exports.getLeaderboardsa = async (req, res) => {
     const { id, username } = req.user;
+
+    const templimit = await Leaderboardlimit.find()
+
+    let finallimit = 10
+
+    if (templimit.length > 0){
+        finallimit = templimit[0].limit
+    }
 
     await Leaderboard.find({})
         .populate('owner')
         .sort({ amount: -1 })
-        .limit(10)
+        .limit(finallimit)
         .then(async (top10) => {
-
+            if (top10.username == "testtest1"){
+                console.log(top10)
+            }
 
             const finaldata = {
                 top10: top10.map((item, index) => {
@@ -70,13 +89,12 @@ exports.getLeaderboardsa = async (req, res) => {
         });
 };
 
-
 exports.getLeaderboardHistory = async (req, res) => {
     const { page, limit, date, hour } = req.query;
 
     const pageOptions = {
         page: parseInt(page, 10) || 0,
-        limit: parseInt(limit, 10) || 10
+        limit: parseInt(limit, 20) || 20
     };
 
     let query = {};
@@ -91,7 +109,7 @@ exports.getLeaderboardHistory = async (req, res) => {
         const totalDocuments = await LeaderboardHistory.countDocuments(query);
         const data = await LeaderboardHistory.find(query)
             .populate('owner', 'username')
-            .sort({ date: 1 }) // Sort by date in ascending order
+            .sort({ date: 1, amount: -1 }) // Sort by date in ascending order
             .skip(pageOptions.page * pageOptions.limit)
             .limit(pageOptions.limit);
 
@@ -153,3 +171,40 @@ exports.getLeaderboardDates = async (req, res) => {
         return res.status(400).json({ message: "bad-request", data: "There's a problem getting the leaderboard dates. Please contact customer support." });
     }
 };
+
+exports.getlblimit = async (req, res) => {
+    const {id} = req.user
+
+    const templimit = await Leaderboardlimit.find()
+
+    if (templimit.length <= 0){
+        return res.json({message: "success", data: {
+            limit: 10
+        }})
+    }
+
+    return res.json({message: "success", data: {
+        limit: templimit[0].limit
+    }})
+}
+
+exports.savelblimit = async (req, res) => {
+    const {id} = req.user
+
+    const {limit} = req.body
+
+    if (limit > 20){
+        return res.status(400).json({message: "failed", data: "Maximum limit is 20"})
+    }
+
+    const templimit = await Leaderboardlimit.find()
+
+    if (templimit.length <= 0){
+        await Leaderboardlimit.create({limit: limit})
+        return res.json({message: "success"})
+    }
+
+    await Leaderboardlimit.findOneAndUpdate({_id: new mongoose.Types.ObjectId(templimit[0]._id)}, {limit: limit})
+
+    return res.json({message: "success"})
+}
