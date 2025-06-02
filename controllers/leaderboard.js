@@ -87,7 +87,7 @@ exports.getLeaderboardsa = async (req, res) => {
 };
 
 exports.getLeaderboardHistory = async (req, res) => {
-    const { page, limit, date, hour } = req.query;
+    const { page, limit, date  } = req.query;
 
     const pageOptions = {
         page: parseInt(page, 10) || 0,
@@ -96,11 +96,9 @@ exports.getLeaderboardHistory = async (req, res) => {
 
     let query = {};
     if (date) {
-        query.date = { $regex: new RegExp(`^${date}`) }; // Allow date search in YYYY-MM-DD format
+        query.eventname = { $regex: new RegExp(`^${date}`) }; // Allow date search in YYYY-MM-DD format
     }
-    if (hour) {
-        query.date = { $regex: new RegExp(`^${date} ${hour}`) }; // Allow date and hour search in YYYY-MM-DD HH format
-    }
+
 
     try {
         const totalDocuments = await LeaderboardHistory.countDocuments(query);
