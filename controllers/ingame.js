@@ -121,9 +121,9 @@ exports.gettierentry = async (req, res) => {
 
   const entrydata = {
     "Free": false,
-    "Novice": false,
-    "Expert": false,
-    "Elite": false
+    "Nest Stash": false,
+    "Wealth Jar": false,
+    "Piggy Bank": false
   }
 
   entries.forEach(tempdata => {
