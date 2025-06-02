@@ -111,6 +111,11 @@ exports.saveplayerentrylimit = async (req, res) => {
     console.log(err)
   })
 
+    await Playerevententrylimit.updateMany({}, {limit: entrylimit})
+  .catch(err => {
+    console.log(err)
+  })
+
   return res.json({message: "success"})
 }
 
