@@ -4,6 +4,7 @@ const Evententrylimit = require("../models/Evententrylimit")
 const Eventtierentry = require("../models/Eventtierentry")
 const { default: mongoose } = require("mongoose")
 const Eventtimelimit = require("../models/Eventtimelimit")
+const Playerevententrylimit = require("../models/Playerevententrylimit")
 
 exports.getingamelist = async (req, res) => {
     const {id, username} = req.user

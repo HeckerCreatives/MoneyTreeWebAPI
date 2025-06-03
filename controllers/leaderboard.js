@@ -150,19 +150,19 @@ exports.getLeaderboardDates = async (req, res) => {
             $group: {
                 _id: { $substr: ["$eventname", 0, -1] },
                 index: { $first: "$index" }
-            
             }
             },
-            { $sort: { index: 1 } } // Sort by eventname in ascending order
+            { $sort: { index: 1 } } // Sort by index in ascending order
         ]);
 
+        console.log(dates);
         if (dates.length === 0) {
             return res.status(404).json({ message: "failed", data: "No dates found in leaderboard history" });
         }
 
         let formattedDates = []
         if (dates.length > 0){
-            formattedDates = dates.map(date => date._id != '');
+            formattedDates = dates.filter(date => date._id && date._id.trim() !== '').map(date => date._id);
         }
         return res.json({ message: "success", data: formattedDates });
     } catch (err) {
