@@ -160,8 +160,10 @@ exports.getLeaderboardDates = async (req, res) => {
             return res.status(404).json({ message: "failed", data: "No dates found in leaderboard history" });
         }
 
-        const formattedDates = dates.map(date => date._id);
-
+        let formattedDates = []
+        if (dates.length > 0){
+            formattedDates = dates.map(date => date._id != '');
+        }
         return res.json({ message: "success", data: formattedDates });
     } catch (err) {
         console.log(`There's a problem getting the leaderboard dates. Error ${err}`);
