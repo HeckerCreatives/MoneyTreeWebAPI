@@ -798,19 +798,23 @@ exports.deletedailyclaimhistorysa = async (req, res) => {
             return res.status(400).json({ message: "bad-request", data: "There's a problem getting the trainer data! Please contact customer support" })
         })
 
-    if (!inventory) {
-        return res.status(400).json({ message: "failed", data: "Inventory not found" })
-    }
+    // if (!inventory) {
+    //     return res.status(400).json({ message: "failed", data: "Inventory not found" })
+    // }
 
-    inventory.totalaccumulated = Number(inventory.totalaccumulated) - Number(history.amount)
 
-    await inventory.save()
+    if(inventory){
+
+        inventory.totalaccumulated = Number(inventory.totalaccumulated) - Number(history.amount)
+        
+        await inventory.save()
         .then(data => data)
         .catch(err => {
             console.log(`There's a problem getting the trainer data for ${username}. Error: ${err}`)
-
+            
             return res.status(400).json({ message: "bad-request", data: "There's a problem getting the trainer data! Please contact customer support" })
         })
+    }
     await Dailyclaim.findOneAndDelete({ _id: new mongoose.Types.ObjectId(historyid) })
         .then(data => data)
         .catch(err => {

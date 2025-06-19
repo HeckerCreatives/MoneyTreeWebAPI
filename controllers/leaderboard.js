@@ -155,7 +155,6 @@ exports.getLeaderboardDates = async (req, res) => {
             { $sort: { index: 1 } } // Sort by index in ascending order
         ]);
 
-        console.log(dates);
         if (dates.length === 0) {
             return res.status(404).json({ message: "failed", data: "No dates found in leaderboard history" });
         }
