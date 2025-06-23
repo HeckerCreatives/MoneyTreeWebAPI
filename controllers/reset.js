@@ -34,7 +34,10 @@ exports.resetleaderboard = async (req, res) => {
         let index = 1
         if (lastEntry) {
             // If there is a last entry, set the index to the next number
-            index = lastEntry.index + 1;
+
+            if (!isNaN(lastEntry.index)){
+                index = lastEntry.index + 1;
+            }
         }
 
         if (currentLeaderboard.length > 0) {
