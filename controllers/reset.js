@@ -10,28 +10,36 @@ exports.resetleaderboard = async (req, res) => {
     try {
         // Fetch the current leaderboard data
         
+        console.log("fckkkk")
         const lblimit = await Leaderboardlimit.findOne({});
         let limit = 10; // Default limit
 
+        console.log("fckkkk 1")
         if (lblimit && lblimit.limit) {
             limit = lblimit.limit;
         }
+        console.log("fckkkk 2")
         const currentLeaderboard = await Leaderboard.find({})
             .sort({ amount: -1, updatedAt: -1 })
             .limit(limit)
 
+        console.log("fckkkk 3")
         
         const philippinesTime = moment.tz('Asia/Manila').format('YYYY-MM-DD HH:mm:ss');
         // find last entry in the leaderboard history
         let entrylimit = 2;
             const evententrylimit = await Evententrylimit.findOne({});
+        console.log("fckkkk 4")
         if (evententrylimit && evententrylimit.limit) {
             entrylimit = evententrylimit.limit;
         }
 
+        console.log("fckkkk5  ")
         
         const lastEntry = await LeaderboardHistory.findOne({}).sort({ date: -1 }).limit(1);
         let index = 1
+        
+        console.log("fckkkk6")
         if (lastEntry) {
             // If there is a last entry, set the index to the next number
 
@@ -40,6 +48,7 @@ exports.resetleaderboard = async (req, res) => {
             }
         }
 
+        console.log("fckkkk 7")
         console.log("CHEEEEEEEEEECKKKKKKKKKK", lastEntry, index)
 
         if (currentLeaderboard.length > 0) {
