@@ -40,6 +40,8 @@ exports.resetleaderboard = async (req, res) => {
             }
         }
 
+        console.log(lastEntry, index)
+
         if (currentLeaderboard.length > 0) {
             // Insert the fetched data into the leaderboard history with the current date
             const historyData = currentLeaderboard.map(entry => {
