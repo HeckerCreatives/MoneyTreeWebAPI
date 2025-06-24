@@ -87,10 +87,10 @@ exports.requestpayout = async (req, res) => {
             })
 
          const maxAllowedPayout = walletamount.amount * 0.9;       
-             if (payoutvalue > maxAllowedPayout) {
+             if (payoutvalue > walletamount.amount) {
                 return res.status(400).json({ 
                     message: "failed", 
-                    data: `Referral payout cannot exceed 90% of your total unilevel earnings (${maxAllowedPayout})` 
+                    data: `Referral payout cannot exceed 90% of your total unilevel earnings (${walletamount.amount})` 
                  });
             }
             
