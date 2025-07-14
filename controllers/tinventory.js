@@ -138,7 +138,7 @@ exports.treeclaimtotalincome = async (req, res) => {
     if (wallethistory.message != "success"){
         return res.status(400).json({message: "bad-request", data: "There's a problem processing your data. Please contact customer support"})
     }
-    await saveinventoryhistory(id, `${tree.type}`, `Claim ${tree.name}`, earnings)
+    await saveinventoryhistory(id, `${tree.type}`, `Claim ${tree.name}`, earnings, "tree")
 
     await addanalytics(id, wallethistory.data.transactionid, `gamebalance`, `Player ${username} claim ${earnings} in Tree ${tree.name}`, earnings)
 
