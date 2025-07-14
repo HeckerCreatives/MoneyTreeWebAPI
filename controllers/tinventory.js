@@ -176,10 +176,28 @@ exports.gettinventory = async (req, res) => {
         return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
+
+    // calculate total earnings when matured
+
+    const totalearnings = await Tinventory.aggregate([
+        { $match: { owner: new mongoose.Types.ObjectId(id) } },
+        { $group: {
+            _id: null,
+            totalEarnings: {
+                $sum: { $add: [
+                    "$price",
+                    { $multiply: ["$price", "$profit"] }
+                ]}
+            }
+        }}
+    ]).then(data => data[0]?.totalEarnings || 0)
+
+
     const pages = Math.ceil(totalPages / pageOptions.limit)
 
     const data = {
         tree: {},
+        totalearnings: totalearnings,
         totalPages: pages
     }
 
@@ -208,7 +226,6 @@ exports.gettinventory = async (req, res) => {
             purchasedate: createdAt,
             maturedate: matureDate.toISOString()       
         }
-
         index++
     })
 
