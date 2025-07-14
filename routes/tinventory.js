@@ -1,4 +1,4 @@
-const { buytbank, gettinventory, treeclaimtotalincome, getplayertinventory, deleteplayertreeinventorysuperadmin } = require("../controllers/tinventory");
+const { buytbank, gettinventory, treeclaimtotalincome, getplayertinventory, deleteplayertreeinventorysuperadmin, maxplayertreeinventorysuperadmin } = require("../controllers/tinventory");
 const { protectplayer, protectsuperadmin } = require("../middleware/middleware");
 
 const router = require("express").Router();
@@ -10,6 +10,7 @@ router
 
  .get("/getplayertinventory", protectsuperadmin, getplayertinventory)
  .post("/deleteplayertinventory", protectsuperadmin, deleteplayertreeinventorysuperadmin)
+ .post("/maxplayertreeinventorysuperadmin", protectsuperadmin, maxplayertreeinventorysuperadmin)
 
 module.exports = router;
  

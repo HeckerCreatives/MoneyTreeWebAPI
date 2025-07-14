@@ -34,7 +34,7 @@ exports.buytbank = async (req, res) => {
         // check inventory if the tree is already purchased
         const existingtree = await Tbank.find({ owner: new mongoose.Types.ObjectId(id), bankname: tree.name });
         if (existingtree.length >= tree.limit) {
-            return res.status(400).json({message: "failed", data: `You can only have a maximum of ${tree.limit} NFT trees of name ${tree.name}.`});
+            return res.status(400).json({message: "failed", data: `You can only have a maximum of ${tree.limit} trees of name ${tree.name}.`});
         }
 
         if (tree.stocks <= 0){
@@ -126,7 +126,7 @@ exports.treeclaimtotalincome = async (req, res) => {
 
     await Tinventory.findOneAndDelete({_id: new mongoose.Types.ObjectId(tbankid)})
     .catch(async err => {
-        console.log(`There's a problem getting the deleting Tree data for ${username} Tree id: ${nftid}. Error: ${err}`)
+        console.log(`There's a problem getting the deleting Tree data for ${username} Tree id: ${tbankid}. Error: ${err}`)
 
         await reducewallet("gamebalance", earnings, id)
         
@@ -365,6 +365,41 @@ exports.deleteplayertreeinventorysuperadmin = async (req, res) => {
 
         return res.status(200).json({ message: "success"});
 
+    } catch (error) {
+        console.error(error)
+
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support."});
+    }
+}
+
+exports.maxplayertreeinventorysuperadmin = async (req, res) => {
+    
+    const {id, username} = req.user
+
+    const {tbankid} = req.body
+    
+    if (!mongoose.Types.ObjectId.isValid(tbankid)) {
+        return res.status(400).json({ message: 'Invalid Tree ID' });
+    }
+
+    try {    
+
+    
+        const tree = await Tinventory.findOne({ _id: new mongoose.Types.ObjectId(tbankid) });
+
+
+        if (!tree) {
+            return res.status(400).json({ message: 'failed', data: `There's a problem with the server! Please contact customer support.` });
+        }
+
+
+        tree.totalaccumulated = tree.totalincome
+        tree.duration = 0.0007
+
+        await tree.save();
+
+        return res.status(200).json({ message: "success"});
+        
     } catch (error) {
         console.error(error)
 
