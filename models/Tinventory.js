@@ -1,25 +1,33 @@
 const mongoose = require("mongoose");
 
-const inventoryHistorySchema = new mongoose.Schema(
+const TInventoryShema = new mongoose.Schema(
     {
         owner: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Users",
             index: true // Automatically creates an index on 'amount'
         },
-        bankname: {
-            type: String
-        },
-        rank: {
-            type: String,
-            index: true // Automatically creates an index on 'amount'
-        },
         type: {
             type: String,
             index: true // Automatically creates an index on 'amount'
         },
-        amount: {
+        bankname: {
+            type: String,
+            index: true
+        },
+        price: {
             type: Number
+        },
+        profit: {
+            type: Number,
+            index: true // Automatically creates an index on 'amount'
+        },
+        duration: {
+            type: Number
+        },
+        startdate: {
+            type: String,
+            index: true // Automatically creates an index on 'amount'
         }
     },
     {
@@ -27,5 +35,5 @@ const inventoryHistorySchema = new mongoose.Schema(
     }
 )
 
-const Inventoryhistory = mongoose.model("Inventoryhistory", inventoryHistorySchema)
-module.exports = Inventoryhistory
+const Tinventory = mongoose.model("Tinventory", TInventoryShema)
+module.exports = Tinventory

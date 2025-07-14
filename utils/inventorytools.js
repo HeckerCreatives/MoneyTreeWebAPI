@@ -2,8 +2,8 @@ const { default: mongoose } = require("mongoose")
 const Inventoryhistory = require("../models/Inventoryhistory")
 
 
-exports.saveinventoryhistory = async(id, bankname, historytype, amount) => {
-    const history = await Inventoryhistory.create({owner: new mongoose.Types.ObjectId(id), bankname: bankname, type: historytype,   amount: amount})
+exports.saveinventoryhistory = async(id, bankname, historytype, amount, rank) => {
+    const history = await Inventoryhistory.create({owner: new mongoose.Types.ObjectId(id), bankname: bankname, type: historytype, amount: amount, rank: rank})
     .catch(err => {
         console.log(`Error: ${err}`)
         return {
@@ -17,8 +17,8 @@ exports.saveinventoryhistory = async(id, bankname, historytype, amount) => {
             transactionid: history._id,
             type: history.type,
             name: history.bankname,
-            amount: history.amount
-            
+            amount: history.amount,
+            rank: history.rank,
         }
     }
 }

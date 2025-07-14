@@ -109,7 +109,7 @@ exports.buybank = async (req, res) => {
         })
         
         // Record history for first inventory
-        const inventoryhistory1 = await saveinventoryhistory(id, bank.name, `Buy ${bank.name} (1/2)`, amount)
+        const inventoryhistory1 = await saveinventoryhistory(id, bank.name, `Buy ${bank.name} (1/2)`, amount, "bank")
         await addanalytics(id, inventoryhistory1.data.transactionid, `Buy ${bank.name}`, `User ${username} bought ${bank.name} (1/2)`, amount)
     
         // Create second inventory (B1T1)
@@ -136,7 +136,7 @@ exports.buybank = async (req, res) => {
         })
     
         // Record history for second inventory (free B1T1)
-        const inventoryhistory2 = await saveinventoryhistory(id, bank.name, `Buy ${bank.name} (2/2 - Free B1T1)`, 0)
+        const inventoryhistory2 = await saveinventoryhistory(id, bank.name, `Buy ${bank.name} (2/2 - Free B1T1)`, 0, "bank")
         await addanalytics(id, inventoryhistory2.data.transactionid, `Buy ${bank.name}`, `User ${username} received free ${bank.name} (B1T1)`, 0)
     } else {
         await Inventory.create({
@@ -162,7 +162,7 @@ exports.buybank = async (req, res) => {
     })
     
     
-    const inventoryhistory = await saveinventoryhistory(id, bank.name, `Buy ${bank.name}`, amount)
+    const inventoryhistory = await saveinventoryhistory(id, bank.name, `Buy ${bank.name}`, amount, "bank")
     
     await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${bank.name}`, `User ${username} bought ${bank.name}`, amount)
     }
@@ -334,7 +334,7 @@ exports.getunclaimedincomeinventory = async (req, res) => {
 }
 exports.getinventoryhistory = async (req, res) => {
     const {id, username} = req.user
-    const {type, page, limit} = req.query
+    const {type, page, limit, rank} = req.query
 
     const pageOptions = {
         page: parseInt(page) || 0,
@@ -343,7 +343,8 @@ exports.getinventoryhistory = async (req, res) => {
 
     const history = await Inventoryhistory.find({
         owner: new mongoose.Types.ObjectId(id),
-        type: { $regex: type, $options: "i" } // Case-insensitive regex search
+        type: { $regex: type, $options: "i" }, // Case-insensitive regex search
+        rank: { $regex: rank, $options: "i" } // Case-insensitive regex search for rank
     })
     .skip(pageOptions.page * pageOptions.limit)
     .limit(pageOptions.limit)
@@ -364,7 +365,8 @@ exports.getinventoryhistory = async (req, res) => {
 
     const totalPages = await Inventoryhistory.countDocuments({
         owner: new mongoose.Types.ObjectId(id),
-        type: { $regex: type, $options: "i" } 
+        type: { $regex: type, $options: "i" },
+        rank: { $regex: rank, $options: "i" } // Case-insensitive regex search for rank
     })
     .then(data => data)
     .catch(err => {
@@ -455,14 +457,14 @@ exports.getplayerinventoryforadmin = async (req, res) => {
 
 exports.getinventoryhistoryuseradmin = async (req, res) => {
     const {id, username} = req.user
-    const {userid, type, page, limit} = req.query
+    const {userid, type, page, limit, rank} = req.query
 
     const pageOptions = {
         page: parseInt(page) || 0,
         limit: parseInt(limit) || 10
     }
 
-    const history = await Inventoryhistory.find({ owner: new mongoose.Types.ObjectId(userid), type: { $regex: type, $options: "i" }})    
+    const history = await Inventoryhistory.find({ owner: new mongoose.Types.ObjectId(userid), type: { $regex: type, $options: "i" }, rank: { $regex: rank, $options: "i" } }) // Case-insensitive regex search for rank
     .skip(pageOptions.page * pageOptions.limit)
     .limit(pageOptions.limit)
     .sort({'createdAt': -1})
@@ -480,7 +482,7 @@ exports.getinventoryhistoryuseradmin = async (req, res) => {
         }})
     }
 
-    const totalPages = await Inventoryhistory.countDocuments({owner: new mongoose.Types.ObjectId(userid),  type: { $regex: type, $options: "i" }})
+    const totalPages = await Inventoryhistory.countDocuments({owner: new mongoose.Types.ObjectId(userid),  type: { $regex: type, $options: "i" }, rank: { $regex: rank, $options: "i" } })
     .then(data => data)
     .catch(err => {
 

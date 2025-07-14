@@ -15,6 +15,8 @@ const routers = app => {
     app.use("/reset", require("./reset"))
     app.use("/sociallinks", require("./sociallinks"))
     app.use("/staffuser", require("./staffuser"))
+    app.use("/tbank", require("./tbank"))
+    app.use("/tinventory", require("./tinventory"))
     app.use("/unilevel", require("./unilevel"))
     app.use("/user", require("./user"))
     app.use("/wallet", require("./wallet"))
