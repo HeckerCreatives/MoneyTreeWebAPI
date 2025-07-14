@@ -208,7 +208,7 @@ exports.gettinventory = async (req, res) => {
 
         const earnings = getfarm(startdate, AddUnixtimeDay(startdate, duration), (price * profit) + price)
         const remainingtime = RemainingTime(parseFloat(startdate), duration)
-
+        const totalprofit = (price * profit) + price;
         const createdAtDate = new Date(createdAt);
 
         const matureDate = new Date(createdAtDate);
@@ -222,6 +222,7 @@ exports.gettinventory = async (req, res) => {
             profit: profit,
             duration: duration,
             earnings: earnings,
+            totalprofit: totalprofit,
             remainingtime: remainingtime,
             purchasedate: createdAt,
             maturedate: matureDate.toISOString()       
