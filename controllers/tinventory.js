@@ -3,7 +3,7 @@ const Inventoryhistory = require("../models/Inventoryhistory")
 const Tinventory = require("../models/Tinventory")
 const { AddUnixtimeDay, DateTimeServerExpiration, DateTimeServer, RemainingTime } = require("../utils/datetimetools")
 const { getfarm, saveinventoryhistory } = require("../utils/inventorytools")
-const { walletbalance, reducewallet, sendcommissionunilevel } = require("../utils/walletstools")
+const { walletbalance, reducewallet, sendcommissionunilevel, addwallet } = require("../utils/walletstools")
 const Tbank = require("../models/Tbank")
 const { addanalytics } = require("../utils/analyticstools")
 const { addwallethistory } = require("../utils/wallethistorytools")
@@ -355,7 +355,7 @@ exports.deleteplayertreeinventorysuperadmin = async (req, res) => {
             $gte: new Date(tree.createdAt.getTime() - 20000), // 10 seconds before
             $lte: new Date(tree.createdAt.getTime() + 20000)  // 10 seconds after
             },
-            trainername: tree.bankname,
+            bankname: tree.bankname,
             type: `Buy ${tree.bankname}`,
             amount: tree.price
         }).catch(err => {
