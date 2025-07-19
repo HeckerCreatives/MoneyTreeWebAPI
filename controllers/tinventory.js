@@ -207,6 +207,7 @@ exports.gettinventory = async (req, res) => {
     tree.forEach(datatree => {
         const {_id, bankname, type, price, profit, duration, startdate, createdAt} = datatree
 
+
         const earnings = getfarm(startdate, AddUnixtimeDay(startdate, duration), (price * profit) + price)
         const remainingtime = RemainingTime(parseFloat(startdate), duration)
         const totalprofit = (price * profit) + price;
@@ -397,16 +398,21 @@ exports.maxplayertreeinventorysuperadmin = async (req, res) => {
         // Set totalaccumulated to the percentage of totalincome
         tree.totalaccumulated = tree.totalincome * (percent / 100);
 
-        // Adjust duration to match the percentage progress
-        // If percent is 100, duration = 0.0007 (immediate claim)
-        // Otherwise, duration = original duration * (1 - percent/100)
-        if (percent >= 100) {
-            tree.duration = 0.0007;
-        } else {
-            tree.duration = tree.defaultduration * (1 - (percent / 100));
-            // Ensure duration is not negative or zero
-            if (tree.duration < 0.0007) tree.duration = 0.0007;
-        }
+        // // Adjust duration to match the percentage progress
+        // // If percent is 100, duration = 0.0007 (immediate claim)
+        // // Otherwise, duration = original duration * (1 - percent/100)
+        // if (percent >= 100) {
+        //     tree.duration = 0.0007;
+        // } else {
+        //     tree.duration = tree.defaultduration * (1 - (percent / 100));
+        //     // Ensure duration is not negative or zero
+        //     if (tree.duration < 0.0007) tree.duration = 0.0007;
+        // }
+
+        const now = DateTimeServer(); // current unix time in seconds
+        const elapsedSeconds = tree.defaultduration * (percent / 100) * 24 * 60 * 60; // duration in seconds
+        tree.startdate = now - elapsedSeconds;
+
 
         await tree.save();
 
