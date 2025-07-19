@@ -18,6 +18,10 @@ exports.gettbanks = async (req, res) => {
          data = await Tbank.insertMany(tbankdata)
     }
 
+    const sortOrder = ['Lanzones', 'Rambutan', 'Avocado', 'Mango', 'Moneytree'];
+
+    
+
     const formattedData = data.map(item => ({
         id: item._id,
         name: item.name,
@@ -30,6 +34,12 @@ exports.gettbanks = async (req, res) => {
         isActive: item.isActive !== undefined ? item.isActive : true, 
     }));
 
+    formattedData.sort((a, b) => {
+        const indexA = sortOrder.indexOf(a.name);
+        const indexB = sortOrder.indexOf(b.name);
+        return indexA - indexB;
+    });
+    
     return res.status(200).json({ message: "success", data: formattedData });
 }
 

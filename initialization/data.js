@@ -26,7 +26,7 @@ exports.tbankdata = [
 },
 {
     _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e6f9"),
-    name: "Apple",
+    name: "Moneytree",
     price: 2500,
     profit: 0.8,
     duration: 8,

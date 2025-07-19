@@ -127,7 +127,7 @@ exports.initialize = async () => {
             {
                 type: "wealth_jar",
                 name: "Wealth Jar",
-                min: 1000,
+                min: 500,
                 max: 10000,
                 profit: 0.6,
                 duration: 30,
@@ -137,7 +137,7 @@ exports.initialize = async () => {
             {
             type: "piggy_bank",
             name: "Piggy Bank",
-            min: 5000,
+            min: 500,
             max: 50000,
             profit: 1.5,
             duration: 45,
@@ -147,7 +147,7 @@ exports.initialize = async () => {
             {
             type: "money_vault",
             name: "Money Vault", 
-            min: 1000,
+            min: 500,
             max: 10000,
             profit: 0.50,
             duration: 14,
@@ -157,7 +157,7 @@ exports.initialize = async () => {
             {
             type: "treasure_chest",
             name: "Treasure Chest",
-            min: 5000,
+            min: 500,
             max: 50000,
             profit: 1.2,
             duration: 28,
