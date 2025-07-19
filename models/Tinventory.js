@@ -25,6 +25,9 @@ const TInventoryShema = new mongoose.Schema(
         duration: {
             type: Number
         },
+        defaultduration: {
+            type: Number
+        },
         startdate: {
             type: String,
             index: true // Automatically creates an index on 'amount'

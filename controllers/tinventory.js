@@ -61,7 +61,8 @@ exports.buytbank = async (req, res) => {
             bankname: tree.name,
             price: tree.price,
             profit: tree.profit,
-            duration: tree.duration, 
+            duration: tree.duration,
+            defaultduration: tree.duration, 
             expiration: DateTimeServerExpiration(tree.duration), 
             totalincome: totalincome,
             startdate: DateTimeServer(), 
@@ -373,36 +374,45 @@ exports.deleteplayertreeinventorysuperadmin = async (req, res) => {
 }
 
 exports.maxplayertreeinventorysuperadmin = async (req, res) => {
-    
     const {id, username} = req.user
+    const {tbankid, percentage} = req.body
 
-    const {tbankid} = req.body
-    
     if (!mongoose.Types.ObjectId.isValid(tbankid)) {
         return res.status(400).json({ message: 'Invalid Tree ID' });
     }
 
-    try {    
-
-    
+    try {
         const tree = await Tinventory.findOne({ _id: new mongoose.Types.ObjectId(tbankid) });
-
 
         if (!tree) {
             return res.status(400).json({ message: 'failed', data: `There's a problem with the server! Please contact customer support.` });
         }
 
+        // Default to 99.99% if not provided or invalid
+        let percent = 99.99;
+        if (percentage && percentage > 0 && percentage <= 100) {
+            percent = percentage;
+        }
 
-        tree.totalaccumulated = tree.totalincome
-        tree.duration = 0.0007
+        // Set totalaccumulated to the percentage of totalincome
+        tree.totalaccumulated = tree.totalincome * (percent / 100);
+
+        // Adjust duration to match the percentage progress
+        // If percent is 100, duration = 0.0007 (immediate claim)
+        // Otherwise, duration = original duration * (1 - percent/100)
+        if (percent >= 100) {
+            tree.duration = 0.0007;
+        } else {
+            tree.duration = tree.defaultduration * (1 - (percent / 100));
+            // Ensure duration is not negative or zero
+            if (tree.duration < 0.0007) tree.duration = 0.0007;
+        }
 
         await tree.save();
 
         return res.status(200).json({ message: "success"});
-        
     } catch (error) {
         console.error(error)
-
         return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support."});
     }
 }
