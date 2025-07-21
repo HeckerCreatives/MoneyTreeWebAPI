@@ -56,7 +56,7 @@ exports.getselectedplayers = async (req, res) => {
     const totalPages = Math.ceil(totalCount / pageOptions.limit);
 
     const formattedData = data.map(player => ({
-        id: player.owner,
+        id: player.owner._id,
         username: player.owner.username,
         createdAt: player.createdAt,
     }));
