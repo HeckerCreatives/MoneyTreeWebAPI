@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const { SelectedPlayer, RaffleWinner } = require("../models/Raffle");
 
 
@@ -55,7 +56,7 @@ exports.getselectedplayers = async (req, res) => {
     const totalPages = Math.ceil(totalCount / pageOptions.limit);
 
     const formattedData = data.map(player => ({
-        id: player._id,
+        id: player.owner,
         username: player.owner.username,
         createdAt: player.createdAt,
     }));
@@ -70,7 +71,12 @@ exports.deletefromselectedplayers = async (req, res) => {
         return res.status(400).json({ message: "failed", data: "Incomplete form data." });
     }
 
-    await SelectedPlayer.deleteOne({ owner: playerid })
+    const existingPlayer = await SelectedPlayer.findOne({ owner: playerid });
+    if (!existingPlayer) {
+        return res.status(404).json({ message: "failed", data: "Player not found in selected players." });
+    }
+
+    await SelectedPlayer.findOneAndDelete({ owner: new mongoose.Types.ObjectId(playerid) })
         .then(data => data)
         .catch(err => {
             console.error("Error deleting selected player:", err);
