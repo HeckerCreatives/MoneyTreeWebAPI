@@ -148,7 +148,7 @@ exports.getrafflewinners = async (req, res) => {
 
     let data = await RaffleWinner.find()
         .populate("owner", "username")
-        .sort({ index: 1 })
+        .sort({ index: -1 })
         .skip(pageOptions.page * pageOptions.limit)
         .limit(pageOptions.limit)
         .then(data => data)
@@ -172,5 +172,5 @@ exports.getrafflewinners = async (req, res) => {
         createdAt: winner.createdAt,
     }));
 
-    return res.status(200).json({ message: "success", data: formattedData, pagination: { totalCount, totalPages, currentPage: pageOptions.page } });
+    return res.status(200).json({ message: "success", data: formattedData, pagination: { totalCount, totalPages, currentPage: pageOptions.page }, lastwinner: formattedData[0] });
 }
