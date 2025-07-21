@@ -104,7 +104,7 @@ exports.selectwinner = async (req, res) => {
     const highestIndex = await RaffleWinner.findOne()
         .sort({ index: -1 });
 
-    const nextIndex = highestIndex ? highestIndex.index + 1 : 0;
+    const nextIndex = highestIndex ? highestIndex.index + 1 : 1;
 
     const selectedPlayers = await SelectedPlayer.find()
         .populate("owner", "username")
@@ -123,7 +123,7 @@ exports.selectwinner = async (req, res) => {
 
     await RaffleWinner.create({
         owner: winner.owner._id,
-        eventname: "Raffle Winner",
+        eventname: `Raffle Winner #${nextIndex}`,
         index: nextIndex,
     })
     .then(data => data)

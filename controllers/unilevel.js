@@ -125,7 +125,7 @@ exports.playerunilevel = async (req, res) => {
             },
         },
         {
-            $sort: { _id: 1 },
+            $sort: { _id: 1, createdAt: -1 },
         },
         {
             $match: {
@@ -150,7 +150,14 @@ exports.playerunilevel = async (req, res) => {
         },
     ]);
 
-    return res.json({message: "success", data: downline});
+    const filtereddownline = downline
+        .map(level => ({
+            ...level,
+            data: level.data.filter(player => player.totalAmount > 0)
+        }))
+        .filter(level => level.data.length > 0);
+
+    return res.json({message: "success", data: filtereddownline});
 };
 
 exports.playeviewadminunilevel = async (req, res) => {
@@ -300,8 +307,15 @@ exports.playeviewadminunilevel = async (req, res) => {
             },
         },
     ]);
-    
-    return res.json({message: "success", data: downline})
+
+    const filtereddownline = downline
+    .map(level => ({
+        ...level,
+        data: level.data.filter(player => player.totalAmount > 0)
+    }))
+    .filter(level => level.data.length > 0);
+
+    return res.json({message: "success", data: filtereddownline})
 }
 
 exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
@@ -451,8 +465,15 @@ exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
             },
         },
     ]);
-    
-    return res.json({message: "success", data: downline})
+
+    const filtereddownline = downline
+    .map(level => ({
+        ...level,
+        data: level.data.filter(player => player.totalAmount > 0)
+    }))
+    .filter(level => level.data.length > 0);
+
+    return res.json({message: "success", data: filtereddownline})
 }
 
 exports.playerviewadminunilevelDirectCommissionWallet = async (req, res) => {
@@ -603,5 +624,12 @@ exports.playerviewadminunilevelDirectCommissionWallet = async (req, res) => {
         },
     ]);
     
-    return res.json({message: "success", data: downline})
+    const filtereddownline = downline
+    .map(level => ({
+        ...level,
+        data: level.data.filter(player => player.totalAmount > 0)
+    }))
+    .filter(level => level.data.length > 0);
+    
+    return res.json({message: "success", data: filtereddownline})
 }
