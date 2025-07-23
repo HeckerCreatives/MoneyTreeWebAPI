@@ -94,6 +94,15 @@ exports.resetselectedplayers = async (req, res) => {
             return res.status(500).json({ message: "failed", data: "Internal server error." });
         });
 
+    // also delete history
+
+    await RaffleWinner.deleteMany({})
+        .then(data => data)
+        .catch(err => {
+            console.error("Error resetting raffle winners:", err);
+            return res.status(500).json({ message: "failed", data: "Internal server error." });
+        });
+
     return res.status(200).json({ message: "success" });
 }
 
