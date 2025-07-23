@@ -94,15 +94,6 @@ exports.resetselectedplayers = async (req, res) => {
             return res.status(500).json({ message: "failed", data: "Internal server error." });
         });
 
-    // also delete history
-
-    await RaffleWinner.deleteMany({})
-        .then(data => data)
-        .catch(err => {
-            console.error("Error resetting raffle winners:", err);
-            return res.status(500).json({ message: "failed", data: "Internal server error." });
-        });
-
     return res.status(200).json({ message: "success" });
 }
 
@@ -167,7 +158,7 @@ exports.getrafflewinners = async (req, res) => {
         });
 
     if (!data || data.length === 0) {
-        return res.status(404).json({ message: "failed", data: "No raffle winners found." });
+        return res.status(404).json({ message: "success", data: [], pagination: { totalCount: 0, totalPages: 0, currentPage: pageOptions.page }, lastwinner: null });
     }
 
     const totalCount = await RaffleWinner.countDocuments();
