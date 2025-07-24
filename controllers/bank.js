@@ -40,7 +40,7 @@ exports.getBanks = async (req, res) => {
             duration: bank.duration,
             b1t1: bank.b1t1,
             islocked: bank.islocked,
-            isActive: bank.isActive || true
+            isActive: bank.isActive !== undefined ? bank.isActive : true, // Ensure isActive is set to true if not defined
         }));
         return res.status(200).json({
             message: "success",
@@ -81,6 +81,9 @@ exports.editbank = async (req, res) => {
         },
         {
             $set: updatedata
+        },
+        {
+            upsert: true,
         }
     )
     .then(data => data)
