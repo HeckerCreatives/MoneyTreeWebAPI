@@ -60,40 +60,27 @@ exports.editbank = async (req, res) => {
 
     const { bankid, profit, duration, min, max, b1t1, islocked, isActive } = req.body
 
-    if(!bankid || !profit || !duration){
-        return res.status(400).json({ message: "failed", data: "Incomplete form data."})
+    if (!bankid){
+        return res.status(400).json({ message: "failed", data: "Bank ID is required." });
     }
 
-    if (parseFloat(min) < 0 || parseFloat(max) < 0 || parseFloat(profit) < 0 || parseFloat(duration) < 0) {
-        return res.status(400).json({ message: "failed", data: "Values cannot be negative." });
-    }
+    const updatedata = {}
 
-    if (b1t1 && !/^[01]+$/.test(b1t1)) {
-        return res.status(400).json({ message: "failed", data: "b1t1 should only contain '1' and '0'." });
-    }
+    if (profit !== undefined) updatedata.profit = parseFloat(profit);
+    if (duration !== undefined) updatedata.duration = parseFloat(duration);
+    if (min !== undefined) updatedata.min = parseFloat(min);
+    if (max !== undefined) updatedata.max = parseFloat(max);
+    if (b1t1 !== undefined) updatedata.b1t1 = b1t1;
+    if (islocked !== undefined) updatedata.islocked = islocked;
+    if (isActive !== undefined) updatedata.isActive = isActive;
 
-    if (parseFloat(min) < 500) {
-        return res.status(400).json({ 
-            message: "failed", 
-            data: "Minimum price value must be at least 500" 
-        });
-    }
-    
 
     await Bank.findOneAndUpdate(
         {
             _id: new mongoose.Types.ObjectId(bankid)
         },
         {
-            $set: {
-                profit: parseFloat(profit),
-                duration: parseFloat(duration),
-                min: parseFloat(min),
-                max: parseFloat(max),
-                ...(islocked && { islocked }),
-                ...(b1t1 && { b1t1 }), // Only update b1t1 if it is provided
-                ...(isActive !== undefined && { isActive })
-            }
+            $set: updatedata
         }
     )
     .then(data => data)
