@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose");
 const Tbank = require("../models/Tbank");
 const { tbankdata } = require("../initialization/data");
 const Tinventory = require("../models/Tinventory");
+const Inventoryhistory = require("../models/Inventoryhistory");
 
 
 exports.gettbanks = async (req, res) => {
@@ -22,8 +23,21 @@ exports.gettbanks = async (req, res) => {
     const sortOrder = ['Lanzones', 'Rambutan', 'Avocado', 'Mango', 'Moneytree'];
 
     let playertbankassets = await Tinventory.find({ owner: new mongoose.Types.ObjectId(id) })
-
+        .then(data => data)
+        .catch(err => {
+            console.error("Error fetching player bank assets:", err);
+            return res.status(500).json({ message: "failed", data: "Internal server error." });
+        });
     
+    let timesbought = await Inventoryhistory.find({ 
+        rank: "tree", 
+        type: { $regex: /^Buy/i } 
+    })
+        .then(data => data)
+        .catch(err => {
+            console.error("Error fetching times bought:", err);
+            return res.status(500).json({ message: "failed", data: "Internal server error." });
+        });
 
     const formattedData = data.map(item => ({
         id: item._id,
@@ -37,6 +51,7 @@ exports.gettbanks = async (req, res) => {
         isActive: item.isActive !== undefined ? item.isActive : true, 
         isPurchased: playertbankassets.some(asset => asset.bankname === item.name) || false,
         purchasedCount: playertbankassets.filter(asset => asset.bankname === item.name).length || 0,
+        timesBought: timesbought.filter(history => history.bankname === item.name).length || 0
     }));
 
     formattedData.sort((a, b) => {
