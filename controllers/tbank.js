@@ -1,6 +1,7 @@
 const { default: mongoose } = require("mongoose");
 const Tbank = require("../models/Tbank");
 const { tbankdata } = require("../initialization/data");
+const Tinventory = require("../models/Tinventory");
 
 
 exports.gettbanks = async (req, res) => {
@@ -20,6 +21,8 @@ exports.gettbanks = async (req, res) => {
 
     const sortOrder = ['Lanzones', 'Rambutan', 'Avocado', 'Mango', 'Moneytree'];
 
+    let playertbankassets = await Tinventory.find({ owner: new mongoose.Types.ObjectId(id) })
+
     
 
     const formattedData = data.map(item => ({
@@ -32,6 +35,8 @@ exports.gettbanks = async (req, res) => {
         stocks: item.stocks,
         limit: item.limit || 0,
         isActive: item.isActive !== undefined ? item.isActive : true, 
+        isPurchased: playertbankassets.some(asset => asset.bankname === item.name) || false,
+        purchasedCount: playertbankassets.filter(asset => asset.bankname === item.name).length || 0,
     }));
 
     formattedData.sort((a, b) => {

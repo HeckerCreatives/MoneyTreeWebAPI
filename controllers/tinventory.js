@@ -11,7 +11,7 @@ const { addwallethistory } = require("../utils/wallethistorytools")
 
 exports.buytbank = async (req, res) => {
     const {id, username} = req.user
-    const { tbankid } = req.body
+    const { tbankid, quantity } = req.body
 
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -19,21 +19,27 @@ exports.buytbank = async (req, res) => {
     try {
         const wallet = await walletbalance("fiatbalance", id)
         const tree = await Tbank.findOne({ _id: new mongoose.Types.ObjectId(tbankid) })
+        let price = tree.price * quantity;
+
         if(!tree){
             return res.status(400).json({message: "failed", data: "Tree not found or invalid Tree ID."});
+        }
+        if (!quantity || quantity <= 0){
+            return res.status(400).json({message: "failed", data: "Please input valid quantity."});
         }
         if (wallet == "failed" || wallet == "nodata"){
             return res.status(400).json({message: "failed", data: "There's a problem with your account. Please contact customer support for more details"});
         }
 
-        if (wallet < tree.price){
+        if (wallet < price){
             return res.status(400).json({message: "failed", data: "You don't have enough funds to buy this tree! Please top up first and try again."});
         }
 
 
         // check inventory if the tree is already purchased
-        const existingtree = await Tbank.find({ owner: new mongoose.Types.ObjectId(id), bankname: tree.name });
-        if (existingtree.length >= tree.limit) {
+        const existingtree = await Tinventory.find({ owner: new mongoose.Types.ObjectId(id), bankname: tree.name });
+        const existingtreeCount = existingtree.length + quantity;
+        if (existingtreeCount > tree.limit) {
             return res.status(400).json({message: "failed", data: `You can only have a maximum of ${tree.limit} trees of name ${tree.name}.`});
         }
 
@@ -41,15 +47,13 @@ exports.buytbank = async (req, res) => {
             return res.status(400).json({message: "failed", data: `No stocks available for ${tree.name}. Please try again later.`});
         }
 
-
-        const buy = await reducewallet("fiatbalance", tree.price, id)
-        if (buy != "success"){
-            return res.status(400).json({message: "failed", data: "You don't have enough funds to buy this tree! Please top up first and try again."});
+        if (quantity > tree.stocks) {
+            return res.status(400).json({message: "failed", data: `Not enough stocks available for ${tree.name}. Please try again later.`});
         }
 
-        const unilevelrewards = await sendcommissionunilevel(tree.price, id, tree.name, tree.type)
-        if (unilevelrewards != "success"){
-            return res.status(400).json({message: "failed", data: "There's a problem with your account. Please contact customer support for more details"});
+        const buy = await reducewallet("fiatbalance", price, id)
+        if (buy != "success"){
+            return res.status(400).json({message: "failed", data: "You don't have enough funds to buy this tree! Please top up first and try again."});
         }
 
         const totalincome = (tree.profit * tree.price) + tree.price
@@ -68,11 +72,16 @@ exports.buytbank = async (req, res) => {
             startdate: DateTimeServer(), 
         };
 
-        await Tinventory.create([baseInventory], { session });
-        const inventoryhistory = await saveinventoryhistory(id, tree.name, `Buy ${tree.name}`, tree.price, "tree");
-        await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${tree.name}`, `User ${username} bought ${tree.name}`, tree.price);
-
-        tree.stocks -= 1;
+        for (let i = 0; i < quantity; i++) {
+            const unilevelrewards = await sendcommissionunilevel(tree.price, id, tree.name, tree.type)
+            if (unilevelrewards != "success"){
+                return res.status(400).json({message: "failed", data: "There's a problem with your account. Please contact customer support for more details"});
+            }
+            await Tinventory.create([baseInventory], { session });
+            const inventoryhistory = await saveinventoryhistory(id, tree.name, `Buy ${tree.name}`, tree.price, "tree");
+            await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${tree.name}`, `User ${username} bought ${tree.name}`, tree.price);
+        }
+        tree.stocks -= quantity;
         await tree.save({ session });
 
         await session.commitTransaction();

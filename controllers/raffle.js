@@ -93,6 +93,17 @@ exports.resetselectedplayers = async (req, res) => {
             console.error("Error resetting selected players:", err);
             return res.status(500).json({ message: "failed", data: "Internal server error." });
         });
+    const highestIndex = await RaffleWinner.findOne()
+        .sort({ index: -1 });
+
+    const nextIndex = highestIndex ? highestIndex.index + 1 : 1;
+
+        await RaffleWinner.create({
+            eventname: "Buffer",
+            owner: null,
+            index: nextIndex,
+            createdAt: new Date().toISOString()
+        });
 
     return res.status(200).json({ message: "success" });
 }
@@ -113,6 +124,8 @@ exports.selectwinner = async (req, res) => {
             console.error("Error fetching selected players:", err);
             return res.status(500).json({ message: "failed", data: "Internal server error." });
         });
+
+    
 
     if (!selectedPlayers || selectedPlayers.length === 0) {
         return res.status(404).json({ message: "failed", data: "No selected players found." });
@@ -164,7 +177,9 @@ exports.getrafflewinners = async (req, res) => {
     const totalCount = await RaffleWinner.countDocuments();
     const totalPages = Math.ceil(totalCount / pageOptions.limit);
 
-    const formattedData = data.map(winner => ({
+    let newdata = data.filter(winner => winner.eventname !== "Buffer");
+
+    const formattedData = newdata.map(winner => ({
         id: winner._id,
         owner: winner.owner.username,
         eventname: winner.eventname,
@@ -172,5 +187,23 @@ exports.getrafflewinners = async (req, res) => {
         createdAt: winner.createdAt,
     }));
 
-    return res.status(200).json({ message: "success", data: formattedData, pagination: { totalCount, totalPages, currentPage: pageOptions.page }, lastwinner: formattedData[0] });
+    let lastWinner = data[0] || null;
+    let formatlastWinner = lastWinner ? {
+        id: lastWinner._id,
+        owner: lastWinner.owner ? lastWinner.owner.username : "No winner selected yet",
+        eventname: lastWinner.eventname,
+        index: lastWinner.index,
+        createdAt: lastWinner.createdAt,
+    } : null;
+    if (lastWinner && lastWinner.eventname === "Buffer") {
+        formatlastWinner = {
+            id: null,
+            owner: "No winner selected yet",
+            eventname: "Buffer",
+            index: 0,
+            createdAt: new Date().toISOString(),
+        };
+    }
+
+    return res.status(200).json({ message: "success", data: formattedData, pagination: { totalCount, totalPages, currentPage: pageOptions.page }, lastwinner: formatlastWinner });
 }
