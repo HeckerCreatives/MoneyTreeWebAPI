@@ -28,6 +28,10 @@ const BankSchema = new mongoose.Schema(
         },
         islocked: {
             type: String
+        },
+        isActive: {
+            type: Boolean,
+            default: true
         }
     },
     {

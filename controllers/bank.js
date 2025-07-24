@@ -30,9 +30,21 @@ exports.getBanks = async (req, res) => {
             return sortOrder.indexOf(a.type) - sortOrder.indexOf(b.type);
         });
 
+        const formattedBanks = banks.map(bank => ({
+            id: bank._id,
+            type: bank.type,
+            name: bank.name,
+            min: bank.min,
+            max: bank.max,
+            profit: bank.profit,
+            duration: bank.duration,
+            b1t1: bank.b1t1,
+            islocked: bank.islocked,
+            isActive: bank.isActive || true
+        }));
         return res.status(200).json({
             message: "success",
-            data: banks,
+            data: formattedBanks,
         });
     } catch (err) {
         console.log(`There's a problem encountered while fetching banks. Error: ${err}`);
@@ -46,7 +58,7 @@ exports.getBanks = async (req, res) => {
 
 exports.editbank = async (req, res) => {
 
-    const { bankid, profit, duration, min, max, b1t1, islocked } = req.body
+    const { bankid, profit, duration, min, max, b1t1, islocked, isActive } = req.body
 
     if(!bankid || !profit || !duration){
         return res.status(400).json({ message: "failed", data: "Incomplete form data."})
@@ -79,7 +91,8 @@ exports.editbank = async (req, res) => {
                 min: parseFloat(min),
                 max: parseFloat(max),
                 ...(islocked && { islocked }),
-                ...(b1t1 && { b1t1 }) // Only update b1t1 if it is provided
+                ...(b1t1 && { b1t1 }), // Only update b1t1 if it is provided
+                ...(isActive !== undefined && { isActive })
             }
         }
     )
