@@ -150,14 +150,7 @@ exports.playerunilevel = async (req, res) => {
         },
     ]);
 
-    const filtereddownline = downline
-        .map(level => ({
-            ...level,
-            data: level.data.filter(player => player.totalAmount > 0)
-        }))
-        .filter(level => level.data.length > 0);
-
-    return res.json({message: "success", data: filtereddownline});
+    return res.json({message: "success", data: downline});
 };
 
 exports.playeviewadminunilevel = async (req, res) => {
@@ -308,14 +301,8 @@ exports.playeviewadminunilevel = async (req, res) => {
         },
     ]);
 
-    const filtereddownline = downline
-    .map(level => ({
-        ...level,
-        data: level.data.filter(player => player.totalAmount > 0)
-    }))
-    .filter(level => level.data.length > 0);
 
-    return res.json({message: "success", data: filtereddownline})
+    return res.json({message: "success", data: downline})
 }
 
 exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
@@ -466,14 +453,7 @@ exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
         },
     ]);
 
-    const filtereddownline = downline
-    .map(level => ({
-        ...level,
-        data: level.data.filter(player => player.totalAmount > 0)
-    }))
-    .filter(level => level.data.length > 0);
-
-    return res.json({message: "success", data: filtereddownline})
+    return res.json({message: "success", data: downline})
 }
 
 exports.playerviewadminunilevelDirectCommissionWallet = async (req, res) => {
@@ -623,13 +603,6 @@ exports.playerviewadminunilevelDirectCommissionWallet = async (req, res) => {
             },
         },
     ]);
-    
-    const filtereddownline = downline
-    .map(level => ({
-        ...level,
-        data: level.data.filter(player => player.totalAmount > 0)
-    }))
-    .filter(level => level.data.length > 0);
-    
-    return res.json({message: "success", data: filtereddownline})
+
+    return res.json({message: "success", data: downline})
 }
