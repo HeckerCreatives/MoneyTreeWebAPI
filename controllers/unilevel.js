@@ -66,10 +66,12 @@ exports.playerunilevel = async (req, res) => {
                         $match: {
                             $expr: {
                                 $and: [
-                                    { $or: [
-                                        { $eq: ["$type", "commissionbalance"] },
-                                        { $eq: ["$type", "directreferralbalance"] }
-                                    ] },
+                                    {
+                                        $or: [
+                                            { $eq: ["$type", "commissionbalance"] },
+                                            { $eq: ["$type", "directreferralbalance"] }
+                                        ]
+                                    },
                                     { $eq: ["$from", "$$userId"] },
                                     { $eq: ["$owner", new mongoose.Types.ObjectId(id)] }
                                 ]
@@ -95,15 +97,16 @@ exports.playerunilevel = async (req, res) => {
                         else: 0
                     }
                 },
-                // Add a new field to store the lowercase version of the username
                 lowercaseUsername: { $toLower: "$username" }
             }
         },
-        // Search functionality
+        // Filter only users with totalAmount > 0
         {
-            $match: search ? { username: { $regex: new RegExp(search, "i") } } : {}
+            $match: {
+                totalAmount: { $gt: 0 },
+                ...(search ? { username: { $regex: new RegExp(search, "i") } } : {})
+            }
         },
-        // Sort by the lowercase version of username
         {
             $sort: { lowercaseUsername: 1 }
         },
@@ -113,24 +116,23 @@ exports.playerunilevel = async (req, res) => {
                 level: 1,
                 totalAmount: 1,
                 createdAt: 1,
-                referrerUsername: 1, 
-                // lowercaseUsername is not included, so it will be excluded
-            },
+                referrerUsername: 1
+            }
         },
         {
             $group: {
                 _id: "$level",
                 data: { $push: "$$ROOT" },
-                totalDocuments: { $sum: 1 },
-            },
+                totalDocuments: { $sum: 1 }
+            }
         },
         {
-            $sort: { _id: 1, createdAt: -1 },
+            $sort: { _id: 1 }
         },
         {
             $match: {
-                _id: { $lte: 14 },
-            },
+                _id: { $lte: 14 }
+            }
         },
         {
             $project: {
@@ -139,21 +141,27 @@ exports.playerunilevel = async (req, res) => {
                     $slice: [
                         "$data",
                         pageOptions.page * pageOptions.limit,
-                        pageOptions.limit,
-                    ],
+                        pageOptions.limit
+                    ]
                 },
                 totalDocuments: 1,
                 totalPages: {
-                    $ceil: { $divide: ["$totalDocuments", pageOptions.limit] },
-                },
-            },
+                    $ceil: { $divide: ["$totalDocuments", pageOptions.limit] }
+                }
+            }
         },
+        // Optional: Remove levels with no paginated data
+        {
+            $match: {
+                "data.0": { $exists: true }
+            }
+        }
     ]);
 
     const filtereddownline = downline
         .map(level => ({
             ...level,
-            data: level.data.filter(player => player.totalAmount > 0)
+            data: level.data
         }))
         .filter(level => level.data.length > 0);
 
@@ -327,11 +335,13 @@ exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
     };
 
     const downline = await Users.aggregate([
+        // Step 1: Find the root user
         {
             $match: {
                 _id: new mongoose.Types.ObjectId(playerid),
             },
         },
+        // Step 2: Recursively find all downlines
         {
             $graphLookup: {
                 from: "users",
@@ -345,6 +355,7 @@ exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
         {
             $unwind: "$ancestors",
         },
+        // Step 3: Filter by exact level
         {
             $match: {
                 "ancestors.level": parseInt(level),
@@ -353,6 +364,7 @@ exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
         {
             $replaceRoot: { newRoot: "$ancestors" },
         },
+        // Step 4: Lookup referrer info
         {
             $lookup: {
                 from: "users",
@@ -373,6 +385,7 @@ exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
                 }
             }
         },
+        // Step 5: Lookup wallet history and sum amount
         {
             $lookup: {
                 from: "wallethistories",
@@ -382,10 +395,12 @@ exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
                         $match: {
                             $expr: {
                                 $and: [
-                                    { $or: [
-                                        { $eq: ["$type", "commissionbalance"] },
-                                        { $eq: ["$type", "directreferralbalance"] }
-                                    ] },
+                                    {
+                                        $or: [
+                                            { $eq: ["$type", "commissionbalance"] },
+                                            { $eq: ["$type", "directreferralbalance"] }
+                                        ]
+                                    },
                                     { $eq: ["$from", "$$userId"] },
                                     { $eq: ["$owner", new mongoose.Types.ObjectId(playerid)] }
                                 ]
@@ -411,43 +426,48 @@ exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
                         else: 0
                     }
                 },
-                // Add a new field to store the lowercase version of the username
                 lowercaseUsername: { $toLower: "$username" }
             }
         },
-        // Search functionality
+        // Step 6: Filter out users with zero or no earnings
         {
-            $match: search ? { username: { $regex: new RegExp(search, "i") } } : {}
+            $match: {
+                totalAmount: { $gt: 0 },
+                ...(search ? { username: { $regex: new RegExp(search, "i") } } : {})
+            }
         },
-        // Sort by the lowercase version of username
+        // Step 7: Sort
         {
             $sort: { lowercaseUsername: 1 }
         },
+        // Step 8: Project only needed fields
         {
             $project: {
+                _id: 1,
                 username: 1,
                 level: 1,
                 totalAmount: 1,
                 createdAt: 1,
-                referrerUsername: 1, 
-                // lowercaseUsername is not included, so it will be excluded
-            },
+                referrerUsername: 1
+            }
         },
+        // Step 9: Group by level
         {
             $group: {
                 _id: "$level",
                 data: { $push: "$$ROOT" },
-                totalDocuments: { $sum: 1 },
-            },
+                totalDocuments: { $sum: 1 }
+            }
         },
         {
-            $sort: { _id: 1 },
+            $sort: { _id: 1 }
         },
         {
             $match: {
-                _id: { $lte: 14 },
-            },
+                _id: { $lte: 14 }
+            }
         },
+        // Step 10: Paginate within each level
         {
             $project: {
                 _id: 1,
@@ -455,25 +475,37 @@ exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
                     $slice: [
                         "$data",
                         pageOptions.page * pageOptions.limit,
-                        pageOptions.limit,
-                    ],
+                        pageOptions.limit
+                    ]
                 },
                 totalDocuments: 1,
                 totalPages: {
-                    $ceil: { $divide: ["$totalDocuments", pageOptions.limit] },
-                },
-            },
+                    $ceil: { $divide: ["$totalDocuments", pageOptions.limit] }
+                }
+            }
         },
+        // Step 11: Filter out empty levels (optional)
+        {
+            $match: {
+                "data.0": { $exists: true }
+            }
+        },
+        // Step 12: Wrap everything in { data: [...] } format
+        {
+            $group: {
+                _id: null,
+                data: { $push: "$$ROOT" }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                data: 1
+            }
+        }
     ]);
 
-    const filtereddownline = downline
-    .map(level => ({
-        ...level,
-        data: level.data.filter(player => player.totalAmount > 0)
-    }))
-    .filter(level => level.data.length > 0);
-
-    return res.json({message: "success", data: filtereddownline})
+    return res.json({message: "success", data: downline})
 }
 
 exports.playerviewadminunilevelDirectCommissionWallet = async (req, res) => {
@@ -540,10 +572,12 @@ exports.playerviewadminunilevelDirectCommissionWallet = async (req, res) => {
                         $match: {
                             $expr: {
                                 $and: [
-                                    { $or: [
-                                        { $eq: ["$type", "commissionbalance"] },
-                                        { $eq: ["$type", "directreferralbalance"] }
-                                    ] },
+                                    {
+                                        $or: [
+                                            { $eq: ["$type", "commissionbalance"] },
+                                            { $eq: ["$type", "directreferralbalance"] }
+                                        ]
+                                    },
                                     { $eq: ["$from", "$$userId"] },
                                     { $eq: ["$owner", new mongoose.Types.ObjectId(playerid)] }
                                 ]
@@ -569,42 +603,43 @@ exports.playerviewadminunilevelDirectCommissionWallet = async (req, res) => {
                         else: 0
                     }
                 },
-                // Add a new field to store the lowercase version of the username
                 lowercaseUsername: { $toLower: "$username" }
             }
         },
-        // Search functionality
+        // Filter only users with totalAmount > 0 and optional search
         {
-            $match: search ? { username: { $regex: new RegExp(search, "i") } } : {}
+            $match: {
+                totalAmount: { $gt: 0 },
+                ...(search ? { username: { $regex: new RegExp(search, "i") } } : {})
+            }
         },
-        // Sort by the lowercase version of username
         {
             $sort: { lowercaseUsername: 1 }
         },
         {
             $project: {
+                _id: 1,
                 username: 1,
                 level: 1,
                 totalAmount: 1,
                 createdAt: 1,
-                referrerUsername: 1, 
-                // lowercaseUsername is not included, so it will be excluded
-            },
+                referrerUsername: 1
+            }
         },
         {
             $group: {
                 _id: "$level",
                 data: { $push: "$$ROOT" },
-                totalDocuments: { $sum: 1 },
-            },
+                totalDocuments: { $sum: 1 }
+            }
         },
         {
-            $sort: { _id: 1 },
+            $sort: { _id: 1 }
         },
         {
             $match: {
-                _id: { $lte: 14 },
-            },
+                _id: { $lte: 14 }
+            }
         },
         {
             $project: {
@@ -613,23 +648,33 @@ exports.playerviewadminunilevelDirectCommissionWallet = async (req, res) => {
                     $slice: [
                         "$data",
                         pageOptions.page * pageOptions.limit,
-                        pageOptions.limit,
-                    ],
+                        pageOptions.limit
+                    ]
                 },
                 totalDocuments: 1,
                 totalPages: {
-                    $ceil: { $divide: ["$totalDocuments", pageOptions.limit] },
-                },
-            },
+                    $ceil: { $divide: ["$totalDocuments", pageOptions.limit] }
+                }
+            }
         },
+        {
+            $match: {
+                "data.0": { $exists: true } // Filter out empty paginated levels
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                data: { $push: "$$ROOT" }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                data: 1
+            }
+        }
     ]);
     
-    const filtereddownline = downline
-    .map(level => ({
-        ...level,
-        data: level.data.filter(player => player.totalAmount > 0)
-    }))
-    .filter(level => level.data.length > 0);
-    
-    return res.json({message: "success", data: filtereddownline})
+    return res.json({message: "success", data: downline})
 }
