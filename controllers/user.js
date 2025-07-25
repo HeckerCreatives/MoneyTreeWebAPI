@@ -151,7 +151,7 @@ exports.searchplayerlist = async (req, res) => {
     const userlistpipeline = [
         {
             $match: {
-                username: { $regex: new RegExp(playerusername, 'i') }
+                username: { $regex: playerusername, $options: "i" }
             }
         },
         {
