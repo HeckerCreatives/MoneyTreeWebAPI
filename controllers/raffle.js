@@ -11,10 +11,10 @@ exports.addselectedplayer = async (req, res) => {
         return res.status(400).json({ message: "failed", data: "Incomplete form data." });
     }
 
-    const existingPlayer = await SelectedPlayer.findOne({ owner: playerid });
-    if (existingPlayer) {
-        return res.status(400).json({ message: "failed", data: "You have already selected this player." });
-    }
+    // const existingPlayer = await SelectedPlayer.findOne({ owner: playerid });
+    // if (existingPlayer) {
+    //     return res.status(400).json({ message: "failed", data: "You have already selected this player." });
+    // }
 
     await SelectedPlayer.create({
         owner: playerid,
