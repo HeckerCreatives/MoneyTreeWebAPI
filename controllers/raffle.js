@@ -159,7 +159,7 @@ exports.getrafflewinners = async (req, res) => {
         limit: parseInt(limit) || 10,
     }
 
-    let data = await RaffleWinner.find()
+    let data = await RaffleWinner.find({ eventname: { $ne: "Buffer" } })
         .populate("owner", "username")
         .sort({ index: -1 })
         .skip(pageOptions.page * pageOptions.limit)
@@ -177,9 +177,8 @@ exports.getrafflewinners = async (req, res) => {
     const totalCount = await RaffleWinner.countDocuments();
     const totalPages = Math.ceil(totalCount / pageOptions.limit);
 
-    let newdata = data.filter(winner => winner.eventname !== "Buffer");
 
-    const formattedData = newdata.map(winner => ({
+    const formattedData = data.map(winner => ({
         id: winner._id,
         owner: winner.owner.username,
         eventname: winner.eventname,
