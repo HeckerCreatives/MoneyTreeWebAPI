@@ -155,6 +155,9 @@ exports.searchplayerlist = async (req, res) => {
             }
         },
         {
+            $limit: parseInt(limit) || 100
+        },
+        {
             $facet: {
                 data: [
                     {

@@ -174,7 +174,7 @@ exports.getrafflewinners = async (req, res) => {
         return res.status(404).json({ message: "success", data: [], pagination: { totalCount: 0, totalPages: 0, currentPage: pageOptions.page }, lastwinner: null });
     }
 
-    const totalCount = await RaffleWinner.countDocuments();
+    const totalCount = await RaffleWinner.countDocuments({ eventname: { $ne: "Buffer" } });
     const totalPages = Math.ceil(totalCount / pageOptions.limit);
 
 
@@ -186,7 +186,16 @@ exports.getrafflewinners = async (req, res) => {
         createdAt: winner.createdAt,
     }));
 
-    let lastWinner = data[0] || null;
+    const lwinner = await RaffleWinner.findOne({})
+        .sort({ index: -1 })
+        .populate("owner", "username")
+        .then(data => data)
+        .catch(err => {
+            console.error("Error fetching last winner:", err);
+            return res.status(500).json({ message: "failed", data: "Internal server error." });
+        });
+
+    let lastWinner = lwinner || null;
     let formatlastWinner = lastWinner ? {
         id: lastWinner._id,
         owner: lastWinner.owner ? lastWinner.owner.username : "No winner selected yet",
