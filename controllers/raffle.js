@@ -1,6 +1,5 @@
 const { default: mongoose } = require("mongoose");
 const { SelectedPlayer, RaffleWinner } = require("../models/Raffle");
-const { cleanupraffle } = require("../utils/cleanuputil");
 
 
 exports.addselectedplayer = async (req, res) => {
@@ -94,11 +93,15 @@ exports.resetselectedplayers = async (req, res) => {
             console.error("Error resetting selected players:", err);
             return res.status(500).json({ message: "failed", data: "Internal server error." });
         });
+    const highestIndex = await RaffleWinner.findOne()
+        .sort({ index: -1 });
+
+    const nextIndex = highestIndex ? highestIndex.index + 1 : 1;
 
         await RaffleWinner.create({
             eventname: "Buffer",
             owner: null,
-            index: 0,
+            index: nextIndex,
             createdAt: new Date().toISOString()
         });
 
@@ -156,7 +159,6 @@ exports.getrafflewinners = async (req, res) => {
         limit: parseInt(limit) || 10,
     }
 
-    await cleanupraffle();
     let data = await RaffleWinner.find({ eventname: { $ne: "Buffer" } })
         .populate("owner", "username")
         .sort({ index: -1 })
@@ -176,16 +178,20 @@ exports.getrafflewinners = async (req, res) => {
     const totalPages = Math.ceil(totalCount / pageOptions.limit);
 
 
-    const formattedData = data.map(winner => ({
-        id: winner._id,
-        owner: winner.owner.username,
-        eventname: winner.eventname,
-        index: winner.index,
-        createdAt: winner.createdAt,
-    }));
+    // Calculate the starting index for the current page
+    let startIndex = totalCount - (pageOptions.page * pageOptions.limit);
+    const formattedData = data.map((winner, i) => {
+        return {
+            id: winner._id,
+            owner: winner.owner ? winner.owner.username : "No winner selected yet",
+            eventname: winner.eventname,
+            index: startIndex - i,
+            createdAt: winner.createdAt,
+        };
+    });
 
     const lwinner = await RaffleWinner.findOne({})
-        .sort({ createdAt: -1 })
+        .sort({ index: -1 })
         .populate("owner", "username")
         .then(data => data)
         .catch(err => {
