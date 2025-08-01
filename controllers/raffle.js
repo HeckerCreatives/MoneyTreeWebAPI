@@ -1,5 +1,6 @@
 const { default: mongoose } = require("mongoose");
 const { SelectedPlayer, RaffleWinner } = require("../models/Raffle");
+const { cleanupraffle } = require("../utils/cleanuputil");
 
 
 exports.addselectedplayer = async (req, res) => {
@@ -93,15 +94,11 @@ exports.resetselectedplayers = async (req, res) => {
             console.error("Error resetting selected players:", err);
             return res.status(500).json({ message: "failed", data: "Internal server error." });
         });
-    const highestIndex = await RaffleWinner.findOne()
-        .sort({ index: -1 });
-
-    const nextIndex = highestIndex ? highestIndex.index + 1 : 1;
 
         await RaffleWinner.create({
             eventname: "Buffer",
             owner: null,
-            index: nextIndex,
+            index: 0,
             createdAt: new Date().toISOString()
         });
 
@@ -159,6 +156,7 @@ exports.getrafflewinners = async (req, res) => {
         limit: parseInt(limit) || 10,
     }
 
+    cleanupraffle();
     let data = await RaffleWinner.find({ eventname: { $ne: "Buffer" } })
         .populate("owner", "username")
         .sort({ index: -1 })
@@ -187,7 +185,7 @@ exports.getrafflewinners = async (req, res) => {
     }));
 
     const lwinner = await RaffleWinner.findOne({})
-        .sort({ index: -1 })
+        .sort({ createdAt: -1 })
         .populate("owner", "username")
         .then(data => data)
         .catch(err => {
