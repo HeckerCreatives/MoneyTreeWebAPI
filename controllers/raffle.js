@@ -134,6 +134,7 @@ exports.selectwinner = async (req, res) => {
         owner: winner.owner._id,
         eventname: `Raffle Winner #${nextIndex}`,
         index: nextIndex,
+        newindex: nextIndex,
     })
     .then(data => data)
     .catch(err => {
