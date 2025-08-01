@@ -156,7 +156,7 @@ exports.getrafflewinners = async (req, res) => {
         limit: parseInt(limit) || 10,
     }
 
-    cleanupraffle();
+    await cleanupraffle();
     let data = await RaffleWinner.find({ eventname: { $ne: "Buffer" } })
         .populate("owner", "username")
         .sort({ index: -1 })
