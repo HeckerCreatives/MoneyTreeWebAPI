@@ -27,6 +27,10 @@ const RaffleWinnerSchema = new mongoose.Schema(
             type: Number,
             index: true,
             default: 0,
+        },
+        newindex: {
+            type: Number,
+            default: 0,
         }
     },
     {

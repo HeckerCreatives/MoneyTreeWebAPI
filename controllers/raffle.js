@@ -93,15 +93,11 @@ exports.resetselectedplayers = async (req, res) => {
             console.error("Error resetting selected players:", err);
             return res.status(500).json({ message: "failed", data: "Internal server error." });
         });
-    const highestIndex = await RaffleWinner.findOne()
-        .sort({ index: -1 });
-
-    const nextIndex = highestIndex ? highestIndex.index + 1 : 1;
 
         await RaffleWinner.create({
             eventname: "Buffer",
             owner: null,
-            index: nextIndex,
+            index: 0,
             createdAt: new Date().toISOString()
         });
 
@@ -178,20 +174,18 @@ exports.getrafflewinners = async (req, res) => {
     const totalPages = Math.ceil(totalCount / pageOptions.limit);
 
 
-    // Calculate the starting index for the current page
-    let startIndex = totalCount - (pageOptions.page * pageOptions.limit);
     const formattedData = data.map((winner, i) => {
         return {
             id: winner._id,
             owner: winner.owner ? winner.owner.username : "No winner selected yet",
             eventname: winner.eventname,
-            index: startIndex - i,
+            index: winner.newindex,
             createdAt: winner.createdAt,
         };
     });
 
     const lwinner = await RaffleWinner.findOne({})
-        .sort({ index: -1 })
+        .sort({ createdAt: -1 })
         .populate("owner", "username")
         .then(data => data)
         .catch(err => {
