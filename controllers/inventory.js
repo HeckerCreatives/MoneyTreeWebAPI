@@ -214,7 +214,7 @@ exports.claimtotalincome = async (req, res) => {
     if (wallethistory.message != "success"){
         return res.status(400).json({message: "bad-request", data: "There's a problem processing your data. Please contact customer support"})
     }
-    await saveinventoryhistory(id, `${bank.name}`, `Claim ${bank.name}`, bankdb.totalincome)
+    await saveinventoryhistory(id, `${bank.name}`, `Claim ${bank.name}`, bankdb.totalincome, "bank")
 
     await addanalytics(id, wallethistory.data.transactionid, `gamebalance`, `Player ${username} claim ${bankdb.totalaccumulated} in Bank ${bankdb.type}`, bankdb.totalaccumulated)
     await Dailyclaim.deleteMany({ owner: new mongoose.Types.ObjectId(id), inventory: new mongoose.Types.ObjectId(bankid) })
@@ -343,8 +343,8 @@ exports.getinventoryhistory = async (req, res) => {
 
     const history = await Inventoryhistory.find({
         owner: new mongoose.Types.ObjectId(id),
-        type: { $regex: type, $options: "i" }, // Case-insensitive regex search
-        rank: { $regex: rank, $options: "i" } // Case-insensitive regex search for rank
+        type: { $regex: String(type), $options: "i" }, // Case-insensitive regex search
+        rank: { $regex: String(rank), $options: "i" } // Case-insensitive regex search for rank
     })
     .skip(pageOptions.page * pageOptions.limit)
     .limit(pageOptions.limit)
@@ -365,8 +365,8 @@ exports.getinventoryhistory = async (req, res) => {
 
     const totalPages = await Inventoryhistory.countDocuments({
         owner: new mongoose.Types.ObjectId(id),
-        type: { $regex: type, $options: "i" },
-        rank: { $regex: rank, $options: "i" } // Case-insensitive regex search for rank
+        type: { $regex: String(type), $options: "i" },
+        rank: { $regex: String(rank), $options: "i" } // Case-insensitive regex search for rank
     })
     .then(data => data)
     .catch(err => {
@@ -464,7 +464,7 @@ exports.getinventoryhistoryuseradmin = async (req, res) => {
         limit: parseInt(limit) || 10
     }
 
-    const history = await Inventoryhistory.find({ owner: new mongoose.Types.ObjectId(userid), type: { $regex: type, $options: "i" }, rank: { $regex: rank, $options: "i" } }) // Case-insensitive regex search for rank
+    const history = await Inventoryhistory.find({ owner: new mongoose.Types.ObjectId(userid), type: { $regex: String(type), $options: "i" }, rank: { $regex: String(rank), $options: "i" } }) // Case-insensitive regex search for rank
     .skip(pageOptions.page * pageOptions.limit)
     .limit(pageOptions.limit)
     .sort({'createdAt': -1})
@@ -482,7 +482,7 @@ exports.getinventoryhistoryuseradmin = async (req, res) => {
         }})
     }
 
-    const totalPages = await Inventoryhistory.countDocuments({owner: new mongoose.Types.ObjectId(userid),  type: { $regex: type, $options: "i" }, rank: { $regex: rank, $options: "i" } })
+    const totalPages = await Inventoryhistory.countDocuments({owner: new mongoose.Types.ObjectId(userid),  type: { $regex: String(type), $options: "i" }, rank: { $regex: String(rank), $options: "i" } })
     .then(data => data)
     .catch(err => {
 
