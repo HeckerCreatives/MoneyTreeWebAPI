@@ -194,7 +194,7 @@ exports.claimtotalincome = async (req, res) => {
 
     const templimit = (bankdb.price * bankdb.profit) + bankdb.price
 
-    if (Math.round(bankdb.totalaccumulated) < templimit){
+    if (Math.round(bankdb.totalaccumulated) < (templimit - 1)){
         return res.status(400).json({message: "failed", data: "You still didn't reach the limit of this bank! keep playing and reach the limit in order to claim"})
     }
 
