@@ -267,7 +267,10 @@ exports.playeviewadminunilevel = async (req, res) => {
         },
         // Search functionality
         {
-            $match: search ? { username: { $regex: new RegExp(search, "i") } } : {}
+            $match: {
+                totalAmount: { $gt: 0 },
+                ...(search ? { username: { $regex: new RegExp(search, "i") } } : {})
+            }        
         },
         // Sort by the lowercase version of username
         {
@@ -316,14 +319,7 @@ exports.playeviewadminunilevel = async (req, res) => {
         },
     ]);
 
-    const filtereddownline = downline
-    .map(level => ({
-        ...level,
-        data: level.data.filter(player => player.totalAmount > 0)
-    }))
-    .filter(level => level.data.length > 0);
-
-    return res.json({message: "success", data: filtereddownline})
+    return res.json({message: "success", data: downline})
 }
 
 exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
