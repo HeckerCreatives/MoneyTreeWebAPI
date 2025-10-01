@@ -50,7 +50,7 @@ exports.getpayinlist = async (req, res) => {
         }
     ]);
 
-    return res.json({message: "success", data: payinlist});
+    // return res.json({message: "success", data: payinlist});
 
     const pages = Math.ceil(totalPages / pageOptions.limit)
 
@@ -106,7 +106,16 @@ exports.getpayinhistorysuperadmin = async (req, res) => {
                 as: "userdetails"
             }
         },
-        { $unwind: "$userdetails" }
+        { $unwind: "$userdetails" },
+        {
+            $lookup: {
+                from: "staffusers",
+                localField: "processby",
+                foreignField: "_id",
+                as: "processbyinfo"
+            }
+        },
+        { $unwind: "$processbyinfo" }
     ];
     
     // Conditionally add $match stage for username if searchUsername is provided
@@ -136,6 +145,7 @@ exports.getpayinhistorysuperadmin = async (req, res) => {
                         userid: "$ownerinfo._id",
                         firstname: "$userdetails.firstname",
                         lastname: "$userdetails.lastname",
+                        processby: "$processbyinfo.username",
                         createdAt: 1
                     }
                 },
@@ -155,8 +165,6 @@ exports.getpayinhistorysuperadmin = async (req, res) => {
     const totalPages = payinhistory[0].totalPages[0]?.count || 0;
     const pages = Math.ceil(totalPages / pageOptions.limit);
 
-    console.log(payinhistory[0])
-
     const data = {
         payinhistory: [],
         totalPages: pages
@@ -164,7 +172,7 @@ exports.getpayinhistorysuperadmin = async (req, res) => {
 
     if (payinhistory.length >= 0){
         payinhistory[0].data.forEach(valuedata => {
-            const { _id, owner, status, value, type, username, firstname, lastname, userid, createdAt } = valuedata;
+            const { _id, owner, status, value, type, username, firstname, lastname, userid, createdAt, processby } = valuedata;
 
             data.payinhistory.push({
                 id: _id,
@@ -176,7 +184,8 @@ exports.getpayinhistorysuperadmin = async (req, res) => {
                 value: value,
                 status: status,
                 type: type,
-                createdAt: createdAt
+                createdAt: createdAt,
+                processby: processby != null ? processby : ""
             });
         });
     }

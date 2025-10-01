@@ -369,7 +369,16 @@ exports.getpayoutlist = async (req, res) => {
                 as: "userdetails"
             }
         },
-        { $unwind: "$userdetails" }
+        { $unwind: "$userdetails" },
+        {
+            $lookup: {
+                from: "staffusers",
+                localField: "processby",
+                foreignField: "_id",
+                as: "processbyinfo"
+            }
+        },
+        { $unwind: { path: "$processbyinfo", preserveNullAndEmptyArrays: true } }
     ];
 
     // Add date filter
@@ -424,7 +433,8 @@ exports.getpayoutlist = async (req, res) => {
                             paymentmethod: 1,
                             accountnumber: 1,
                             accountname: 1,
-                            createdAt: 1
+                            createdAt: 1,
+                            processby: "$processbyinfo.username"
                         }
                     },
                     { $skip: pageOptions.page * pageOptions.limit },
@@ -459,6 +469,7 @@ exports.getpayoutlist = async (req, res) => {
                 accountnumber,
                 accountname,
                 userid,
+                processby,
                 createdAt
             } = valuedata;
 
@@ -481,7 +492,8 @@ exports.getpayoutlist = async (req, res) => {
                 status: status === "processing" ? "In Review" : status,
                 type,
                 createdAt,
-                phonenumber
+                phonenumber,
+                processby: processby || ""
             });
         });
 
@@ -533,6 +545,17 @@ exports.getpayouthistorysuperadmin = async (req, res) => {
         },
         {
             $unwind: "$userdetails"
+        },
+        {
+            $lookup: {
+                from: "staffusers",
+                localField: "processby",
+                foreignField: "_id",
+                as: "processbyinfo"
+            }
+        },
+        {
+            $unwind: { path: "$processbyinfo", preserveNullAndEmptyArrays: true }
         }
     ];
 
@@ -572,6 +595,7 @@ exports.getpayouthistorysuperadmin = async (req, res) => {
                             phonenumber: "$userdetails.phonenumber",
                             accountnumber: 1,
                             accountname: 1,
+                            processby: "$processbyinfo.username",
                             createdAt: 1
                         }
                     },
@@ -608,12 +632,13 @@ exports.getpayouthistorysuperadmin = async (req, res) => {
         };
 
         payoutlistResult[0].data.forEach(valuedata => {
-            const { _id, owner, status, value, type, username, firstname, lastname, accountnumber, accountname, paymentmethod, userid, createdAt, phonenumber } = valuedata;
+            const { _id, owner, status, value, type, username, firstname, lastname, accountnumber, accountname, paymentmethod, userid, createdAt, phonenumber, processby } = valuedata;
 
             data.payoutlist.push({
                 createdAt: createdAt,
                 id: _id,
                 owner: owner,
+                processby: processby != null ? processby : "",
                 username: username,
                 userid: userid,
                 firstname: firstname,
@@ -799,7 +824,7 @@ exports.deletepayout = async (req, res) => {
         return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
-    console.log(`Payout request id: ${payoutdata._id}  owner: ${payoutdata.owner}  type: ${payoutdata.type}  amount: ${payoutdata.value}`)
+    // console.log(`Payout request id: ${payoutdata._id}  owner: ${payoutdata.owner}  type: ${payoutdata.type}  amount: ${payoutdata.value}`)
 
     await Userwallets.findOneAndUpdate({owner: new mongoose.Types.ObjectId(payoutdata.owner), type: payoutdata.type}, {$inc: {amount: payoutdata.value}})
     .catch(err => {
