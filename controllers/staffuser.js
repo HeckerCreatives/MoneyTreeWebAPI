@@ -16,7 +16,7 @@ exports.getsadashboard = async(req, res) => {
     const commissiontotalpipeline = [
         {
             $match: {
-                type: "commissionbalance"
+                type: { $in: ["commissionbalance", "directreferralbalance"] }
             }
         },
         {
@@ -64,7 +64,7 @@ exports.getsadashboard = async(req, res) => {
     const unilevelcommissiontotalpipeline = [
         {
             $match: {
-                type: "unilevelbalance"
+                type: "commissionbalance"
             }
         },
         {
