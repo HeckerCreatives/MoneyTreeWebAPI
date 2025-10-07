@@ -20,7 +20,7 @@ exports.gettbanks = async (req, res) => {
          data = await Tbank.insertMany(tbankdata)
     }
 
-    const sortOrder = ['Lanzones', 'Rambutan', 'Avocado', 'Mango', 'Moneytree'];
+    const sortOrder = ['Avocado', 'Lanzones', 'Rambutan', 'Mango', 'Moneytree', 'Durian', 'Mangosteen', 'Pineapple', 'Pomello', 'Marang'];
 
     let playertbankassets = await Tinventory.find({ owner: new mongoose.Types.ObjectId(id) })
         .then(data => data)
@@ -42,6 +42,9 @@ exports.gettbanks = async (req, res) => {
     const formattedData = data.map(item => ({
         id: item._id,
         name: item.name,
+        scientificName: item.scientificName,
+        description: item.description,
+        healthBenefits: item.healthBenefits,
         price: item.price,
         profit: item.profit,
         duration: item.duration,
@@ -65,11 +68,14 @@ exports.gettbanks = async (req, res) => {
 
 
 exports.edittbank = async (req, res) => {
-    const { tbankid, name, profit, duration, price, type, stocks, limit, isActive } = req.body;
+    const { tbankid, name, scientificName, description, healthBenefits, profit, duration, price, type, stocks, limit, isActive } = req.body;
 
     const updateData = {};
 
     if (name !== undefined) updateData.name = name;
+    if (scientificName !== undefined) updateData.scientificName = scientificName;
+    if (description !== undefined) updateData.description = description;
+    if (healthBenefits !== undefined) updateData.healthBenefits = healthBenefits;
     if (type !== undefined) updateData.type = type;
     if (stocks !== undefined) updateData.stocks = parseInt(stocks);
     if (profit !== undefined) updateData.profit = parseFloat(profit);

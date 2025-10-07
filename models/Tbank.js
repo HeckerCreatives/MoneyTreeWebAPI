@@ -6,6 +6,15 @@ const TbankSchema = new mongoose.Schema(
         name: {
             type: String,
         },
+        scientificName: {
+            type: String,
+        },
+        description: {
+            type: String,
+        },
+        healthBenefits: [{
+            type: String,
+        }],
         price: {
             type: Number,
             default: 0,

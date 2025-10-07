@@ -5,6 +5,9 @@ exports.tbankdata = [
 {
     _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e6f7"),
     name: "Avocado",
+    scientificName: "Persea americana",
+    description: "Avocados are nutrient-dense and contain a mix of healthy fats, vitamins, minerals, and fiber.",
+    healthBenefits: ["Rich in heart-healthy fats", "Nutrient-dense with fiber", "High in vitamins and minerals", "Antioxidants and anti-inflammatory compounds", "May support eye health", "May aid nutrient absorption", "Potential weight management support", "Bone health"],
     price: 500,
     profit: 0.5,
     duration: 6,
@@ -16,6 +19,9 @@ exports.tbankdata = [
 {
     _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e6f8"),
     name: "Mango",
+    scientificName: "Mangifera indica",
+    description: "Mangoes are juicy, nutrient-rich tropical fruits often called the “king of fruits” due to their wide range of health benefits.",
+    healthBenefits: ["High in vitamin C and A for immunity and vision", "Supports digestion with natural enzymes", "Packed with antioxidants", "Promotes healthy skin and hair", "May improve heart health", "Aids in maintaining healthy weight", "Supports brain health", "Boosts energy and hydration"],
     price: 1000,
     profit: 0.6,
     duration: 7,
@@ -27,6 +33,9 @@ exports.tbankdata = [
 {
     _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e6f9"),
     name: "Moneytree",
+    scientificName: "XAAUSD",
+    description: "Your financial medicine, watch your wallet get healthy and heavy.",
+    healthBenefits: ["Represents wealth and positive energy", "Encourages growth and productivity", "Symbol of good luck and fortune", "Promotes balance and harmony", "Motivates goal-setting and success", "Inspires hope and determination", "Reminds us to nurture opportunities", "Symbolizes long-term stability and strength"],
     price: 2500,
     profit: 0.8,
     duration: 8,
@@ -35,9 +44,13 @@ exports.tbankdata = [
     limit: 3,
     isActive: true
 },
+
 {
     _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e698"),
     name: "Rambutan",
+    scientificName: "Nephelium lappaceum",
+    description: "Rambutan are tropical fruits rich in vitamins, minerals, and antioxidants that support overall health.",
+    healthBenefits: ["Excellent source of vitamin C", "Supports immune function", "Promotes healthy digestion", "High in antioxidants that fight free radicals", "May support healthy skin"],
     price: 2500,
     profit: 0.8,
     duration: 8,
@@ -49,6 +62,9 @@ exports.tbankdata = [
 {
     _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e699"),
     name: "Lanzones",
+    scientificName: "Lansium parasiticum",
+    description: "Lanzones are sweet tropical fruits packed with nutrients and powerful antioxidants that benefit the body.",
+    healthBenefits: ["Rich in dietary fiber for digestion", "Contains vitamin C to boost immunity", "Provides natural antioxidants", "Low in calories, great for weight control", "Supports healthy skin", "May help regulate blood sugar", "Promotes bone and teeth health", "Helps reduce fatigue and increase energy"],
     price: 2500,
     profit: 0.8,
     duration: 8,
@@ -57,4 +73,75 @@ exports.tbankdata = [
     limit: 3,
     isActive: true
 },
+
+{
+    _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e670"),
+    name: "Durian",
+    scientificName: "Durio",
+    description: "Durian, often called the “king of fruits,” is rich, creamy, and packed with nutrients. Despite its strong smell, it offers many health benefits.",
+    healthBenefits: ["High in fiber for digestive health", "Rich in vitamin C and B-complex vitamins", "Contains potassium for heart and muscle function", "Provides natural energy from healthy carbohydrates", "Has antioxidants that protect cells", "Supports healthy skin and immunity", "May help regulate mood due to tryptophan", "Promotes bone strength and overall vitality"],
+    price: 500,
+    profit: 0.5,
+    duration: 6,
+    type: "tree",
+    stocks: 10,
+    limit: 1,
+    isActive: true
+},
+{
+    _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e671"),
+    name: "Mangosteen",
+    scientificName: "Garcinia mangostana",
+    description: "Mangosteen, known as the “queen of fruits,” is prized for its juicy white flesh and powerful antioxidant properties.",
+    healthBenefits: ["Packed with xanthones, strong natural antioxidants", "Supports immune system and fights inflammation", "Promotes healthy skin and anti-aging", "May help control blood sugar levels", "Supports heart health and circulation", "Aids in digestion and gut balance", "May help with weight management", "Promotes overall cell protection and repair"],
+    price: 1000,
+    profit: 0.6,
+    duration: 7,
+    type: "tree",
+    stocks: 8,
+    limit: 2,
+    isActive: true
+},
+{
+    _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e672"),
+    name: "Marang",
+    scientificName: "Artocarpus odoratissimus",
+    description: "Marang is a tropical fruit known for its creamy, sweet, and aromatic flesh. It’s rich in vitamins, minerals, and antioxidants that promote overall health.",
+    healthBenefits: ["Rich in vitamin C for immune support", "Good source of dietary fiber for digestion", "Contains antioxidants that fight free radicals", "Provides energy with natural sugars", "Supports healthy skin and collagen production", "Contains potassium for heart health", "May help regulate blood pressure", "Promotes gut health with natural enzymes"],
+    price: 2500,
+    profit: 0.8,
+    duration: 8,
+    type: "tree",
+    stocks: 5,
+    limit: 3,
+    isActive: true
+},
+{
+    _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e673"),
+    name: "Pineapple",
+    scientificName: "Ananas comosus",
+    description: "Pineapple is a tropical fruit known for its refreshing taste and powerful enzymes. It’s full of vitamins, minerals, and antioxidants.",
+    healthBenefits: ["High in vitamin C for immune defense", "Contains bromelain, an enzyme that aids digestion", "Supports tissue repair and wound healing", "Anti-inflammatory properties for joint health", "Boosts energy with natural sugars", "Promotes healthy skin and collagen formation", "Aids in nutrient absorption", "Supports strong bones with manganese"],
+    price: 2500,
+    profit: 0.8,
+    duration: 8,
+    type: "tree",
+    stocks: 5,
+    limit: 3,
+    isActive: true
+},
+{
+    _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e674"),
+    name: "Pomello",
+    scientificName: "Citrus maxima",
+    description: "Pomelo is the largest citrus fruit, known for its sweet and tangy flavor. It’s nutrient-dense and hydrating.",
+    healthBenefits: ["Excellent source of vitamin C", "Rich in antioxidants that boost immunity", "Aids in digestion and promotes bowel regularity", "Supports weight management due to fiber", "Helps maintain healthy skin", "Contains potassium for heart health", "May help lower cholesterol levels", "Promotes hydration and detoxification"],
+    price: 2500,
+    profit: 0.8,
+    duration: 8,
+    type: "tree",
+    stocks: 5,
+    limit: 3,
+    isActive: true
+}
 ]
