@@ -35,6 +35,10 @@ exports.buytbank = async (req, res) => {
             return res.status(400).json({message: "failed", data: "You don't have enough funds to buy this tree! Please top up first and try again."});
         }
 
+        if (!tree.isActive){
+            return res.status(400).json({message: "failed", data: "This tree is currently inactive. Please try again later."});
+        }
+
 
         // check inventory if the tree is already purchased
         const existingtree = await Tinventory.find({ owner: new mongoose.Types.ObjectId(id), bankname: tree.name });
