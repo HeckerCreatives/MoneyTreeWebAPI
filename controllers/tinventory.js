@@ -65,7 +65,7 @@ exports.buytbank = async (req, res) => {
         const baseInventory = {
             owner: new mongoose.Types.ObjectId(id), 
             type: tree.type,
-            rank: tree.rank, 
+            // rank: tree.rank, 
             bankname: tree.name,
             price: tree.price,
             profit: tree.profit,
@@ -76,15 +76,34 @@ exports.buytbank = async (req, res) => {
             startdate: DateTimeServer(), 
         };
 
+        const inventoryDocs = [];
+
         for (let i = 0; i < quantity; i++) {
-            const unilevelrewards = await sendcommissionunilevel(tree.price, id, tree.name, tree.type)
-            if (unilevelrewards != "success"){
-                return res.status(400).json({message: "failed", data: "There's a problem with your account. Please contact customer support for more details"});
-            }
-            await Tinventory.create([baseInventory], { session });
-            const inventoryhistory = await saveinventoryhistory(id, tree.name, `Buy ${tree.name}`, tree.price, "tree");
-            await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${tree.name}`, `User ${username} bought ${tree.name}`, tree.price);
+            inventoryDocs.push({ ...baseInventory, _id: new mongoose.Types.ObjectId() });
         }
+
+        try {
+            await Tinventory.insertMany(inventoryDocs, { session });
+        } catch (error) {
+            console.log(`There's a problem creating inventory documents for ${username}. Error: ${error}`);
+            throw new Error("There's a problem with your account. Please contact customer support for more details");
+        }
+
+
+        try {
+            for (let i = 0; i < quantity; i++) {
+                const unilevelrewards = await sendcommissionunilevel(tree.price, id, tree.name, tree.type)
+                if (unilevelrewards != "success"){
+                    return res.status(400).json({message: "failed", data: "There's a problem with your account. Please contact customer support for more details"});
+                }
+                const inventoryhistory = await saveinventoryhistory(id, tree.name, `Buy ${tree.name}`, tree.price, "tree");
+                await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${tree.name}`, `User ${username} bought ${tree.name}`, tree.price);
+            }            
+        } catch (historyError) {
+            console.log(`There's a problem creating inventory history for ${username}. Error: ${historyError}`);
+            throw new Error("There's a problem with your account. Please contact customer support for more details");
+        }
+
         tree.stocks -= quantity;
         await tree.save({ session });
 

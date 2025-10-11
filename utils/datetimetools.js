@@ -102,3 +102,15 @@ exports.RemainingTime = (startTime, claimDays) => {
 
     return remainingTimeSeconds;
 }
+
+exports.ManualDateTimeServer = (passeddate) => {
+    const date = new Date(passeddate);
+
+    // Get the Unix timestamp in milliseconds
+    const unixTimeMilliseconds = date.getTime();
+        
+    // Convert it to Unix timestamp in seconds
+    const unixTimeSeconds = Math.floor(unixTimeMilliseconds / 1000);
+    
+    return unixTimeSeconds;
+}
