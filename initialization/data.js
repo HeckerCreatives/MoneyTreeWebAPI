@@ -14,7 +14,7 @@ exports.tbankdata = [
     type: "tree",
     stocks: 10,
     limit: 1,
-    isActive: true
+    isActive: false
 },
 {
     _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e6f8"),
@@ -28,7 +28,7 @@ exports.tbankdata = [
     type: "tree",
     stocks: 8,
     limit: 2,
-    isActive: true
+    isActive: false
 },
 {
     _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e6f9"),
@@ -42,7 +42,7 @@ exports.tbankdata = [
     type: "tree",
     stocks: 5,
     limit: 3,
-    isActive: true
+    isActive: false
 },
 
 {
@@ -57,7 +57,7 @@ exports.tbankdata = [
     type: "tree",
     stocks: 5,
     limit: 3,
-    isActive: true
+    isActive: false
 },
 {
     _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e699"),
@@ -71,7 +71,7 @@ exports.tbankdata = [
     type: "tree",
     stocks: 5,
     limit: 3,
-    isActive: true
+    isActive: false
 },
 
 {
@@ -86,7 +86,7 @@ exports.tbankdata = [
     type: "tree",
     stocks: 10,
     limit: 1,
-    isActive: true
+    isActive: false
 },
 {
     _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e671"),
@@ -100,7 +100,7 @@ exports.tbankdata = [
     type: "tree",
     stocks: 8,
     limit: 2,
-    isActive: true
+    isActive: false
 },
 {
     _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e672"),
@@ -114,7 +114,7 @@ exports.tbankdata = [
     type: "tree",
     stocks: 5,
     limit: 3,
-    isActive: true
+    isActive: false
 },
 {
     _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e673"),
@@ -128,7 +128,7 @@ exports.tbankdata = [
     type: "tree",
     stocks: 5,
     limit: 3,
-    isActive: true
+    isActive: false
 },
 {
     _id: new mongoose.Types.ObjectId("64f8c1b2e4b0f3a1c8d5e674"),
@@ -142,6 +142,6 @@ exports.tbankdata = [
     type: "tree",
     stocks: 5,
     limit: 3,
-    isActive: true
+    isActive: false
 }
 ]

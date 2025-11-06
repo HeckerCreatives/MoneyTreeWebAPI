@@ -1,6 +1,7 @@
 const { default: mongoose } = require("mongoose");
 const Analytics = require("../models/Analytics");
 const Payin = require("../models/Payin");
+const moment = require("moment-timezone");
 
 exports.getpayingraph = async (req, res) => {
     const { id, username } = req.user;
@@ -187,13 +188,15 @@ exports.gettotalpayinperday = async (req, res) => {
 
     // Add startDate conditionally
     if (startDate) {
-        matchStage.createdAt = { $gte: new Date(startDate) };
+        const start = moment.tz(startDate, "Asia/Manila").startOf('day').toDate();
+        matchStage.createdAt = { $gte: start };
     }
 
     // Add endDate conditionally
     if (endDate) {
+        const end = moment.tz(endDate, "Asia/Manila").endOf('day').toDate();
         matchStage.createdAt = matchStage.createdAt || {}; // Initialize if not already
-        matchStage.createdAt.$lte = new Date(endDate);
+        matchStage.createdAt.$lte = end;
     }
 
     const result = await Payin.aggregate([
@@ -204,7 +207,13 @@ exports.gettotalpayinperday = async (req, res) => {
         {
             // Project the date to just the day (remove time part)
             $project: {
-                day: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                day: { 
+                    $dateToString: { 
+                        format: "%Y-%m-%d", 
+                        date: "$createdAt",
+                        timezone: "+08:00" 
+                    } 
+                },
                 value: 1
             }
         },
@@ -961,10 +970,9 @@ exports.getcommissionlist = async (req, res) => {
 
     let dateFilter = {};
     if (startdate && enddate) {
-        const startOfDay = new Date(startdate);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(enddate);
-        endOfDay.setHours(23, 59, 59, 999);
+        // Parse dates in GMT+8 timezone
+        const startOfDay = moment.tz(startdate, "Asia/Manila").startOf('day').toDate();
+        const endOfDay = moment.tz(enddate, "Asia/Manila").endOf('day').toDate();
 
         dateFilter.createdAt = {
             $gte: startOfDay,
