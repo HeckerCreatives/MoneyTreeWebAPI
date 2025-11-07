@@ -198,6 +198,11 @@ exports.claimtotalincome = async (req, res) => {
         return res.status(400).json({message: "failed", data: "You still didn't reach the limit of this bank! keep playing and reach the limit in order to claim"})
     }
 
+    const dayspassed = (DateTimeServer() - bankdb.startdate) / 86400000 // milliseconds in a day
+    if (bankdb.duration < (dayspassed - 1)) {
+        return res.status(400).json({message: "failed", data: "You still didn't reach the duration of this bank! keep playing and reach the duration in order to claim"})
+    }
+
     await addwallet("gamebalance", bankdb.totalincome, id)
 
     await Inventory.findOneAndDelete({_id: new mongoose.Types.ObjectId(bankid)})
