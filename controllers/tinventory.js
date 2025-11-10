@@ -11,11 +11,11 @@ const { addwallethistory } = require("../utils/wallethistorytools")
 
 exports.buytbank = async (req, res) => {
     const {id, username} = req.user
-    const { tbankid, quantity } = req.body
+    const { tbankid, quantity: UpdatedQuantity } = req.body
 
     const session = await mongoose.startSession();
     session.startTransaction();
-
+    const quantity = Math.max(0, Math.floor(Number(UpdatedQuantity) || 0));
     try {
         const wallet = await walletbalance("fiatbalance", id)
         const tree = await Tbank.findOne({ _id: new mongoose.Types.ObjectId(tbankid) })
