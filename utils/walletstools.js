@@ -5,27 +5,33 @@ const Wallethistory = require("../models/Wallethistory")
 const Analytics = require("../models/Analytics")
 
 
-exports.walletbalance = async (type, id) => {
-    const balance = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(id), type: type})
+exports.walletbalance = async (type, id, session = null) => {
+    const query = {owner: new mongoose.Types.ObjectId(id), type: type};
+    const options = session ? { session } : {};
+    
+    const balance = await Userwallets.findOne(query, null, options)
     .then(data => data)
     .catch(err => {
 
-        console.log(`Failed to get wallet data for ${data.owner} type: ${type}, error: ${err}`)
+        console.log(`Failed to get wallet data for ${id} type: ${type}, error: ${err}`)
 
         return "failed"
     })
 
     if (!balance){
-        console.log(`No wallet data for ${data.owner} type: ${type}, error: ${err}`)
+        console.log(`No wallet data for ${id} type: ${type}`)
         return "nodata"
     }
 
     return balance.amount
 }
 
-exports.reducewallet = async (type, price, id) => {
+exports.reducewallet = async (type, price, id, session = null) => {
+    const query = {owner: new mongoose.Types.ObjectId(id), type: type};
+    const update = {$inc: { amount: -price}};
+    const options = session ? { session } : {};
 
-    await Userwallets.findOneAndUpdate({owner: new mongoose.Types.ObjectId(id), type: type}, {$inc: { amount: -price}})
+    await Userwallets.findOneAndUpdate(query, update, options)
     .catch(err => {
 
         console.log(`Failed to reduce wallet data for ${id} type: ${type} price: ${price}, error: ${err}`)
@@ -36,7 +42,7 @@ exports.reducewallet = async (type, price, id) => {
     return "success"
 }
 
-exports.sendcommissionunilevel = async (commissionAmount, id, bankname, banktype) => {
+exports.sendcommissionunilevel = async (commissionAmount, id, bankname, banktype, session = null) => {
 
     const pipeline = [
         // Match the sender
@@ -203,12 +209,10 @@ exports.sendcommissionunilevel = async (commissionAmount, id, bankname, banktype
         return "failed"
     })
 
-    console.log(unilevelresult)
 
     const historypipeline = []
     const analyticspipeline = []
 
-// ...existing code...
 
     unilevelresult.forEach(dataresult => {
         const { _id, level, amount } = dataresult
@@ -254,8 +258,9 @@ exports.sendcommissionunilevel = async (commissionAmount, id, bankname, banktype
         }
     }))
 
+    const bulkOptions = session ? { session } : {};
 
-    await Userwallets.bulkWrite(bulkOperationUnilvl)
+    await Userwallets.bulkWrite(bulkOperationUnilvl, bulkOptions)
     .catch(err => {
 
         console.log(`Failed to distribute commission wallet data, unilevel parent: ${id} commission amount: ${commissionAmount}, error: ${err}`)
@@ -263,7 +268,7 @@ exports.sendcommissionunilevel = async (commissionAmount, id, bankname, banktype
         return "failed"
     })
 
-    await Userwallets.bulkWrite(bulkOperationUnilvlcommision)
+    await Userwallets.bulkWrite(bulkOperationUnilvlcommision, bulkOptions)
     .catch(err => {
 
         console.log(`Failed to distribute commission wallet data, unilevel parent: ${id} commission amount: ${commissionAmount}, error: ${err}`)
@@ -271,7 +276,9 @@ exports.sendcommissionunilevel = async (commissionAmount, id, bankname, banktype
         return "failed"
     })
 
-    await Wallethistory.insertMany(historypipeline)
+    const insertOptions = session ? { session } : {};
+
+    await Wallethistory.insertMany(historypipeline, insertOptions)
     .catch(async err => {
 
         console.log(`Failed to write commission wallet history data, unilevel parent: ${id} commission amount: ${commissionAmount}, error: ${err}`)
@@ -279,7 +286,7 @@ exports.sendcommissionunilevel = async (commissionAmount, id, bankname, banktype
         return "failed"
     })
 
-    await Analytics.insertMany(analyticspipeline)
+    await Analytics.insertMany(analyticspipeline, insertOptions)
     .catch(async err => {
 
         console.log(`Failed to write commission wallet analytics data, unilevel parent: ${id} commission amount: ${commissionAmount}, error: ${err}`)
@@ -291,8 +298,12 @@ exports.sendcommissionunilevel = async (commissionAmount, id, bankname, banktype
     return "success"
 }
 
-exports.addwallet = async (type, price, id) => {
-    await Userwallets.findOneAndUpdate({owner: new mongoose.Types.ObjectId(id), type: type}, {$inc: { amount: price}})
+exports.addwallet = async (type, price, id, session = null) => {
+    const query = {owner: new mongoose.Types.ObjectId(id), type: type};
+    const update = {$inc: { amount: price}};
+    const options = session ? { session } : {};
+    
+    await Userwallets.findOneAndUpdate(query, update, options)
     .catch(err => {
 
         console.log(`Failed to add wallet data for ${id} type: ${type} price: ${price}, error: ${err}`)

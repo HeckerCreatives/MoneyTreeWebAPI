@@ -55,7 +55,7 @@ exports.buytbank = async (req, res) => {
             return res.status(400).json({message: "failed", data: `Not enough stocks available for ${tree.name}. Please try again later.`});
         }
 
-        const buy = await reducewallet("fiatbalance", price, id)
+        const buy = await reducewallet("fiatbalance", price, id, session)
         if (buy != "success"){
             return res.status(400).json({message: "failed", data: "You don't have enough funds to buy this tree! Please top up first and try again."});
         }
@@ -92,12 +92,12 @@ exports.buytbank = async (req, res) => {
 
         try {
             for (let i = 0; i < quantity; i++) {
-                const unilevelrewards = await sendcommissionunilevel(tree.price, id, tree.name, tree.type)
+                const unilevelrewards = await sendcommissionunilevel(tree.price, id, tree.name, tree.type, session)
                 if (unilevelrewards != "success"){
                     return res.status(400).json({message: "failed", data: "There's a problem with your account. Please contact customer support for more details"});
                 }
-                const inventoryhistory = await saveinventoryhistory(id, tree.name, `Buy ${tree.name}`, tree.price, "tree");
-                await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${tree.name}`, `User ${username} bought ${tree.name}`, tree.price);
+                const inventoryhistory = await saveinventoryhistory(id, tree.name, `Buy ${tree.name}`, tree.price, "tree", session);
+                await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${tree.name}`, `User ${username} bought ${tree.name}`, tree.price, session);
             }            
         } catch (historyError) {
             console.log(`There's a problem creating inventory history for ${username}. Error: ${historyError}`);

@@ -1,8 +1,9 @@
 const { default: mongoose } = require("mongoose")
 const Analytics = require("../models/Analytics")
 
-exports.addanalytics = async(id, transactionid, type, description, amount) => {
-    await Analytics.create({owner: new mongoose.Types.ObjectId(id), transactionid: transactionid, type: type, description: description, amount: amount})
+exports.addanalytics = async(id, transactionid, type, description, amount, session = null) => {
+    const options = session ? { session } : {};
+    await Analytics.create({owner: new mongoose.Types.ObjectId(id), transactionid: transactionid, type: type, description: description, amount: amount}, options)
     .catch(err => {
 
         console.log(`Failed to create analytics data for ${id} type: ${type} amount: ${amount}, error: ${err}`)
