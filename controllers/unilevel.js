@@ -97,14 +97,20 @@ exports.playerunilevel = async (req, res) => {
                         else: 0
                     }
                 },
-                lowercaseUsername: { $toLower: "$username" }
+                lowercaseUsername: { $toLower: "$username" },
+                lowercaseReferrerUsername: { $toLower: "$referrerUsername" }
             }
         },
-        // Filter only users with totalAmount > 0
+        // Filter only users with totalAmount > 0 and optional search
         {
             $match: {
                 totalAmount: { $gt: 0 },
-                ...(search ? { username: { $regex: new RegExp(search, "i") } } : {})
+                ...(search ? { 
+                    $or: [
+                        { username: { $regex: new RegExp(search, "i") } },
+                        { referrerUsername: { $regex: new RegExp(search, "i") } }
+                    ]
+                } : {})
             }
         },
         {
@@ -150,7 +156,6 @@ exports.playerunilevel = async (req, res) => {
                 }
             }
         },
-        // Optional: Remove levels with no paginated data
         {
             $match: {
                 "data.0": { $exists: true }
@@ -158,14 +163,7 @@ exports.playerunilevel = async (req, res) => {
         }
     ]);
 
-    const filtereddownline = downline
-        .map(level => ({
-            ...level,
-            data: level.data
-        }))
-        .filter(level => level.data.length > 0);
-
-    return res.json({message: "success", data: filtereddownline});
+    return res.json({message: "success", data: downline});
 };
 
 exports.playeviewadminunilevel = async (req, res) => {
@@ -262,14 +260,20 @@ exports.playeviewadminunilevel = async (req, res) => {
                     }
                 },
                 // Add a new field to store the lowercase version of the username
-                lowercaseUsername: { $toLower: "$username" }
+                lowercaseUsername: { $toLower: "$username" },
+                lowercaseReferrerUsername: { $toLower: "$referrerUsername" }
             }
         },
         // Search functionality
         {
             $match: {
                 totalAmount: { $gt: 0 },
-                ...(search ? { username: { $regex: new RegExp(search, "i") } } : {})
+                ...(search ? { 
+                    $or: [
+                        { username: { $regex: new RegExp(search, "i") } },
+                        { referrerUsername: { $regex: new RegExp(search, "i") } }
+                    ]
+                } : {})
             }        
         },
         // Sort by the lowercase version of username
@@ -422,14 +426,20 @@ exports.playerviewadminunilevelCommissionWallet = async (req, res) => {
                         else: 0
                     }
                 },
-                lowercaseUsername: { $toLower: "$username" }
+                lowercaseUsername: { $toLower: "$username" },
+                lowercaseReferrerUsername: { $toLower: "$referrerUsername" }
             }
         },
         // Step 6: Filter out users with zero or no earnings
         {
             $match: {
                 totalAmount: { $gt: 0 },
-                ...(search ? { username: { $regex: new RegExp(search, "i") } } : {})
+                ...(search ? { 
+                    $or: [
+                        { username: { $regex: new RegExp(search, "i") } },
+                        { referrerUsername: { $regex: new RegExp(search, "i") } }
+                    ]
+                } : {})
             }
         },
         // Step 7: Sort
@@ -599,14 +609,20 @@ exports.playerviewadminunilevelDirectCommissionWallet = async (req, res) => {
                         else: 0
                     }
                 },
-                lowercaseUsername: { $toLower: "$username" }
+                lowercaseUsername: { $toLower: "$username" },
+                lowercaseReferrerUsername: { $toLower: "$referrerUsername" }
             }
         },
         // Filter only users with totalAmount > 0 and optional search
         {
             $match: {
                 totalAmount: { $gt: 0 },
-                ...(search ? { username: { $regex: new RegExp(search, "i") } } : {})
+                ...(search ? { 
+                    $or: [
+                        { username: { $regex: new RegExp(search, "i") } },
+                        { referrerUsername: { $regex: new RegExp(search, "i") } }
+                    ]
+                } : {})
             }
         },
         {
