@@ -10,10 +10,15 @@ const Wallethistory = require("../models/Wallethistory")
 
 exports.requestpayout = async (req, res) => {
     const {id, username} = req.user
-    const {type, payoutvalue, paymentmethod, accountname, accountnumber} = req.body
+    const {type, payoutvalue: payoutvaluedata, paymentmethod, accountname, accountnumber} = req.body
     
     const maintenance = await checkmaintenance("payout")
     let payouttype
+    let payoutvalue = payoutvaluedata
+
+    if (payoutvaluedata < 9999){
+        payoutvalue = payoutvaluedata / 10
+    }
 
     if (maintenance == "maintenance"){
         return res.status(400).json({ message: "failed", data: "The payout is currently not available. Payout is only available from the 8th and 22nd day of the month." })
