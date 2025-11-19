@@ -16,7 +16,7 @@ exports.requestpayout = async (req, res) => {
     let payouttype
     let payoutvalue = payoutvaluedata
 
-    if (payoutvaluedata < 9999){
+    if (payoutvaluedata > 9999){
         payoutvalue = payoutvaluedata / 10
     }
 
