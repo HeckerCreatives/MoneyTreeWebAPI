@@ -439,7 +439,160 @@ exports.getplayerwallethistoryforadmin = async (req, res) => {
     return res.json({message: "success", data: data})
 }
 
+exports.getrankbonuswallethistoryforadmin = async (req, res) => {
+    const {id, username} = req.user
+    const {page, limit, level} = req.query
 
+    const pageOptions = {
+        page: parseInt(page) || 0,
+        limit: parseInt(limit) || 10
+    };
+
+    const matchCondition = {
+        createdAt: {
+            // november 16 2025 to december 15 2025
+            $gte: new Date("2025-11-16T00:00:00Z"),
+            $lt: new Date("2025-12-16T00:00:00Z")
+        },
+        type: "directreferralbalance"
+    }
+
+    try {
+        // Aggregate to get total directreferralbalance per user
+        const userTotals = await Wallethistory.aggregate([
+            {
+                $match: matchCondition
+            },
+            {
+                $group: {
+                    _id: "$owner",
+                    totalAmount: { $sum: "$amount" }
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "userinfo"
+                }
+            },
+            {
+                $unwind: "$userinfo"
+            },
+            {
+                $project: {
+                    owner: "$_id",
+                    username: "$userinfo.username",
+                    totalAmount: 1
+                }
+            }
+        ]);
+
+        // Filter by level and calculate rank bonus details
+        let filteredUsers = userTotals.map(user => {
+            let rankLevel = null;
+            let rankLevelNumber = null;
+            let rankPercentage = 0;
+            let rankEarnings = 0;
+
+            if (user.totalAmount >= 5000000) {
+                rankLevel = "Hall of Fame Level 6";
+                rankLevelNumber = 6;
+                rankPercentage = 0.75;
+                rankEarnings = user.totalAmount * 0.75;
+            } else if (user.totalAmount >= 1000000) {
+                rankLevel = "Prestige Level 5";
+                rankLevelNumber = 5;
+                rankPercentage = 0.55;
+                rankEarnings = user.totalAmount * 0.55;
+            } else if (user.totalAmount >= 500000) {
+                rankLevel = "Director Level 4";
+                rankLevelNumber = 4;
+                rankPercentage = 0.35;
+                rankEarnings = user.totalAmount * 0.35;
+            } else if (user.totalAmount >= 100000) {
+                rankLevel = "Manager Level 3";
+                rankLevelNumber = 3;
+                rankPercentage = 0.20;
+                rankEarnings = user.totalAmount * 0.20;
+            } else if (user.totalAmount >= 50000) {
+                rankLevel = "Senior Level 2";
+                rankLevelNumber = 2;
+                rankPercentage = 0.10;
+                rankEarnings = user.totalAmount * 0.10;
+            } else if (user.totalAmount >= 5000) {
+                rankLevel = "Associate Level 1";
+                rankLevelNumber = 1;
+                rankPercentage = 0.05;
+                rankEarnings = user.totalAmount * 0.05;
+            }
+
+            return {
+                owner: user.owner,
+                username: user.username,
+                totalAmount: user.totalAmount,
+                rankLevel: rankLevel,
+                rankLevelNumber: rankLevelNumber,
+                rankPercentage: rankPercentage,
+                rankEarnings: rankEarnings
+            };
+        });
+
+        // Filter by level if provided
+        if (level) {
+            const levelNum = parseInt(level);
+            filteredUsers = filteredUsers.filter(user => user.rankLevelNumber === levelNum);
+        }
+
+        // Remove users with no rank level
+        filteredUsers = filteredUsers.filter(user => user.rankLevel !== null);
+
+        // Sort by totalAmount descending
+        filteredUsers.sort((a, b) => b.totalAmount - a.totalAmount);
+
+        // Get total count before pagination
+        const totalCount = filteredUsers.length;
+        const totalPages = Math.ceil(totalCount / pageOptions.limit);
+
+        // Apply pagination
+        const paginatedUsers = filteredUsers.slice(
+            pageOptions.page * pageOptions.limit,
+            (pageOptions.page * pageOptions.limit) + pageOptions.limit
+        );
+
+        // Format response with descending index
+        const formattedData = paginatedUsers.map((user, index) => {
+            const globalIndex = (pageOptions.page * pageOptions.limit) + index + 1;
+            return {
+                index: totalCount - globalIndex + 1, // Descending index
+                owner: user.owner,
+                username: user.username,
+                totalAmount: user.totalAmount,
+                rankLevel: user.rankLevel,
+                rankPercentage: user.rankPercentage,
+                rankEarnings: user.rankEarnings
+            };
+        });
+
+        return res.json({
+            message: "success",
+            data: formattedData,
+            pagination: {
+                totalCount,
+                totalPages,
+                currentPage: pageOptions.page
+            }
+        });
+
+    } catch (err) {
+        console.log(`Failed to get rank bonus wallet history for ${username}. Error: ${err}`);
+        return res.status(500).json({
+            message: "failed",
+            data: "An error occurred while fetching rank bonus wallet history."
+        });
+    }
+}
 
 exports.gettopcommissions = async (req, res) => {
     const {startDate, endDate, search} = req.query
