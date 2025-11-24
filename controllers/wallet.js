@@ -15,11 +15,54 @@ exports.playerwallets = async (req, res) => {
         return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
+    const rankbonuswalletamount = await Wallethistory.aggregate([
+        {
+            $match: {
+                owner: new mongoose.Types.ObjectId(id),
+                type: "directreferralbalance",
+                createdAt: {
+                    // november 16 to december 15
+                    $gte: new Date("2025-11-16T00:00:00Z"),
+                    $lt: new Date("2025-12-16T00:00:00Z")
+                }
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalAmount: { $sum: "$amount" }
+            }
+        }
+    ])
+
+    let rankEarnings = 0;
+
+    if (rankbonuswalletamount.totalAmount >= 5000000) {
+        rankEarnings = rankbonuswalletamount.totalAmount * 0.75;
+    } else if (rankbonuswalletamount.totalAmount >= 1000000) {
+        rankEarnings = rankbonuswalletamount.totalAmount * 0.55;
+    } else if (rankbonuswalletamount.totalAmount >= 500000) {
+        rankEarnings = rankbonuswalletamount.totalAmount * 0.35;
+    } else if (rankbonuswalletamount.totalAmount >= 100000) {
+        rankEarnings = rankbonuswalletamount.totalAmount * 0.20;
+    } else if (rankbonuswalletamount.totalAmount >= 50000) {
+        rankEarnings = rankbonuswalletamount.totalAmount * 0.10;
+    } else if (rankbonuswalletamount.totalAmount >= 5000) {
+        rankEarnings = rankbonuswalletamount.totalAmount * 0.05;
+    }
+    
     const data = {}
 
     wallets.forEach(datawallet => {
-        console.log(datawallet)
         const {type, amount} = datawallet
+
+        if (type === "rankbonusbalance"){
+            data["rankbonusbalance"] = rankEarnings
+
+            if (amount > 0){
+                data["rankbonusbalance"] = amount
+            }
+        }
 
         data[type] = amount
     })

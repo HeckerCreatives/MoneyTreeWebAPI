@@ -16,9 +16,8 @@ exports.requestpayout = async (req, res) => {
     let payouttype
     let payoutvalue = payoutvaluedata
 
-    if (payoutvaluedata > 9999){
-        payoutvalue = payoutvaluedata / 10
-    }
+
+
 
     if (maintenance == "maintenance"){
         return res.status(400).json({ message: "failed", data: "The payout is currently not available. Payout is only available from the 8th and 22nd day of the month." })
@@ -32,12 +31,36 @@ exports.requestpayout = async (req, res) => {
 
     if (type === 'referral') {
         walletype = 'directreferralbalance'
+        const checkifhascut = await checkmaintenance("referral")
+        if (checkifhascut === "success"){
+                if (payoutvaluedata > 9999){
+                    payoutvalue = payoutvaluedata / 10
+                }
+        }
     }
     else if (type === 'unilevel') {
         walletype = 'unilevelbalance'
+        const checkifhascut = await checkmaintenance("unilevel")
+        if (checkifhascut === "success"){
+            if (payoutvaluedata > 9999){
+                payoutvalue = payoutvaluedata / 10
+            }
+        }       
     }
     else if (type === 'gamebalance') {
         walletype = 'gamebalance'
+        const checkifhascut = await checkmaintenance("game")
+        if (checkifhascut === "success"){
+            if (payoutvaluedata > 9999){
+                payoutvalue = payoutvaluedata / 10
+            }
+        }
+    } else if (type === 'rankbonus'){
+        walletype = 'rankbonusbalance'
+        const hasmaintenance = await checkmaintenance("rankbonus")
+        if (hasmaintenance !== "success"){
+            return res.status(400).json({ message: "failed", data: "Rank Bonus payout is currently under maintenance. Please try again later." })
+        }
     }
 
     const exist = await Payout.find({owner: new mongoose.Types.ObjectId(id), type: walletype, status: "processing"})
