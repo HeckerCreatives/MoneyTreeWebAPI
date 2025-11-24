@@ -50,7 +50,7 @@ exports.playerwallets = async (req, res) => {
     } else if (rankbonuswalletamount.totalAmount >= 5000) {
         rankEarnings = rankbonuswalletamount.totalAmount * 0.05;
     }
-    
+
     const data = {}
 
     wallets.forEach(datawallet => {
@@ -67,6 +67,7 @@ exports.playerwallets = async (req, res) => {
         data[type] = amount
     })
 
+    data.rankearnings = rankEarnings
     return res.json({message: "success", data: data})
 }
 
