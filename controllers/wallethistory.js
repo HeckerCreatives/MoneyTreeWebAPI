@@ -237,6 +237,57 @@ exports.getwalletstatistics = async (req, res) => {
         finaldata.unilevel = statisticUnilevel[0].totalAmount;
     }
 
+    const rankbonusbalance = await Wallethistory.aggregate([
+        {
+            $match: {
+                owner: new mongoose.Types.ObjectId(id),
+                type: "directreferralbalance",
+                createdAt: {
+                    // november 16 2025 to december 15 2025
+                    $gte: new Date("2025-11-16T00:00:00Z"),
+                    $lt: new Date("2025-12-16T00:00:00Z")
+                }
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalAmount: { $sum: "$amount" }
+            }
+        }
+    ])
+
+    if (rankbonusbalance.length > 0) {
+        finaldata.rankbonusbalance = rankbonusbalance[0].totalAmount;
+
+        if (finaldata.rankbonusbalance >= 5000000){
+            finaldata.rankbonuslevel = "Hall of Fame Level 6"
+            finaldata.rankbonuspercentage = 0.75
+            finaldata.rankbonusearnings = finaldata.rankbonusbalance * 0.75
+        } else if (finaldata.rankbonusbalance >= 1000000){
+            finaldata.rankbonuslevel = "Prestige Level 5"
+            finaldata.rankbonuspercentage = 0.55
+            finaldata.rankbonusearnings = finaldata.rankbonusbalance * 0.55
+        } else if (finaldata.rankbonusbalance >= 500000){
+            finaldata.rankbonuslevel = "Director Level 4"
+            finaldata.rankbonuspercentage = 0.35
+            finaldata.rankbonusearnings = finaldata.rankbonusbalance * 0.35
+        } else if (finaldata.rankbonusbalance >= 100000){
+            finaldata.rankbonuslevel = "Manager Level 3"
+            finaldata.rankbonuspercentage = 0.20
+            finaldata.rankbonusearnings = finaldata.rankbonusbalance * 0.20
+        } else if (finaldata.rankbonusbalance >= 50000){
+            finaldata.rankbonuslevel = "Senior Level 2"
+            finaldata.rankbonuspercentage = 0.10
+            finaldata.rankbonusearnings = finaldata.rankbonusbalance * 0.10
+        } else if (finaldata.rankbonusbalance >= 5000){
+            finaldata.rankbonuslevel = "Associate Level 1"
+            finaldata.rankbonuspercentage = 0.05
+            finaldata.rankbonusearnings = finaldata.rankbonusbalance * 0.05
+        }
+    
+    }
+
     return res.json({message: "success", data: finaldata})
 }
 
