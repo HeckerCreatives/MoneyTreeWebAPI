@@ -16,24 +16,24 @@ exports.playerwallets = async (req, res) => {
     })
 
     const rankbonuswalletamount = await Wallethistory.aggregate([
-        {
-            $match: {
-                owner: new mongoose.Types.ObjectId(id),
-                type: "directreferralbalance",
-                createdAt: {
-                    // november 16 to december 15
-                    $gte: new Date("2025-11-16T00:00:00Z"),
-                    $lt: new Date("2025-12-16T00:00:00Z")
+            {
+                $match: {
+                    owner: new mongoose.Types.ObjectId(id),
+                    type: "directreferralbalance",
+                    createdAt: {
+                        // november 16 2025 to december 15 2025
+                        $gte: new Date("2025-11-16T00:00:00Z"),
+                        $lt: new Date("2025-12-16T00:00:00Z")
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalAmount: { $sum: "$amount" }
                 }
             }
-        },
-        {
-            $group: {
-                _id: null,
-                totalAmount: { $sum: "$amount" }
-            }
-        }
-    ])
+        ])
 
     let rankEarnings = 0;
 
