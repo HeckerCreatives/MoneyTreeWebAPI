@@ -32,7 +32,7 @@ exports.requestpayout = async (req, res) => {
     if (type === 'referral') {
         walletype = 'directreferralbalance'
         const checkifhascut = await checkmaintenance("referral")
-        if (checkifhascut === "success"){
+        if (checkifhascut !== "success"){
                 if (payoutvaluedata > 9999){
                     payoutvalue = payoutvaluedata / 10
                 }
@@ -41,7 +41,7 @@ exports.requestpayout = async (req, res) => {
     else if (type === 'unilevel') {
         walletype = 'unilevelbalance'
         const checkifhascut = await checkmaintenance("unilevel")
-        if (checkifhascut === "success"){
+        if (checkifhascut !== "success"){
             if (payoutvaluedata > 9999){
                 payoutvalue = payoutvaluedata / 10
             }
@@ -50,7 +50,7 @@ exports.requestpayout = async (req, res) => {
     else if (type === 'gamebalance') {
         walletype = 'gamebalance'
         const checkifhascut = await checkmaintenance("game")
-        if (checkifhascut === "success"){
+        if (checkifhascut !== "success"){
             if (payoutvaluedata > 9999){
                 payoutvalue = payoutvaluedata / 10
             }
