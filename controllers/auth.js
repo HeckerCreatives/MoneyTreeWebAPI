@@ -104,7 +104,7 @@ exports.register = async (req, res) => {
         return res.status(400).json({ message: "bad-request", data: "There's a problem registering your account. Please try again." })
     })
 
-    const wallets = ["fiatbalance", "gamebalance", "commissionbalance", "directreferralbalance", "unilevelbalance"]
+    const wallets = ["fiatbalance", "gamebalance", "commissionbalance", "directreferralbalance", "unilevelbalance", "rankbonusbalance"]
 
     wallets.forEach(async (data) => {
         await Userwallets.create({owner: new mongoose.Types.ObjectId(player._id), type: data, amount: 0})

@@ -55,7 +55,7 @@ exports.requestpayout = async (req, res) => {
                 payoutvalue = payoutvaluedata / 10
             }
         }
-    } else if (type === 'rankbonus'){
+    } else if (type === 'rankbonusbalance'){
         walletype = 'rankbonusbalance'
         const hasmaintenance = await checkmaintenance("rankbonus")
         if (hasmaintenance !== "success"){
@@ -125,6 +125,8 @@ exports.requestpayout = async (req, res) => {
             payouttype = 'unilevelbalance'
         } else if (type === 'gamebalance'){
             payouttype = 'gamebalance'
+        } else if (type === 'rankbonusbalance'){
+            payouttype = 'rankbonusbalance'
         }
 
     const wallet = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(id), type: payouttype})
@@ -132,7 +134,11 @@ exports.requestpayout = async (req, res) => {
     .catch(err => {
         console.log(`There's a problem getting leaderboard data ${err}`)
         return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
-    })     
+    })
+    
+    if (wallet.amount <= 0 && payouttype == 'rankbonusbalance'){
+        return res.status(400).json({ message: "failed", data: "Rank Bonus Rewards will be processed on December 16th 12 MN." })
+    }
 
     if (payoutvalue > wallet.amount){
         return res.status(400).json({ message: "failed", data: "The amount is greater than your wallet balance" })
@@ -913,10 +919,26 @@ exports.gettotalrequest = async (req, res) => {
         }
     ]);
 
+    const rankBonusTotal = await Payout.aggregate([
+        {
+            $match: {
+                type: "rankbonusbalance",
+                status: "processing"
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalAmount: { $sum: "$value" }
+            }
+        }
+    ]);
+
     return res.json({message: "success", data: {
         totalrequestdirect: directreferralbalance.length > 0 ? (directreferralbalance[0].totalAmount - (directreferralbalance[0].totalAmount * 0.10)) : 0,
         totalrequestunilevel: unilevelbalance.length > 0 ? (unilevelbalance[0].totalAmount - (unilevelbalance[0].totalAmount * 0.10)) : 0,
-        totalrequestgame: gameBalanceTotal.length > 0 ? (gameBalanceTotal[0].totalAmount - (gameBalanceTotal[0].totalAmount * 0.10)) : 0
+        totalrequestgame: gameBalanceTotal.length > 0 ? (gameBalanceTotal[0].totalAmount - (gameBalanceTotal[0].totalAmount * 0.10)) : 0,
+        totalrequestrankbonus: rankBonusTotal.length > 0 ? (rankBonusTotal[0].totalAmount) : 0
     }})
 }
 

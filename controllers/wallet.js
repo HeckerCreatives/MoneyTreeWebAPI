@@ -15,7 +15,7 @@ exports.playerwallets = async (req, res) => {
         return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
-    const rankbonuswalletamount = await Wallethistory.aggregate([
+    let rankbonuswalletamount = await Wallethistory.aggregate([
             {
                 $match: {
                     owner: new mongoose.Types.ObjectId(id),
@@ -35,6 +35,7 @@ exports.playerwallets = async (req, res) => {
             }
         ])
 
+    rankbonuswalletamount = rankbonuswalletamount[0] || { totalAmount: 0 }
     let rankEarnings = 0;
 
     if (rankbonuswalletamount.totalAmount >= 5000000) {
@@ -55,19 +56,17 @@ exports.playerwallets = async (req, res) => {
 
     wallets.forEach(datawallet => {
         const {type, amount} = datawallet
-
+        
+        data[type] = amount
         if (type === "rankbonusbalance"){
             data["rankbonusbalance"] = rankEarnings
-
             if (amount > 0){
                 data["rankbonusbalance"] = amount
             }
         }
 
-        data[type] = amount
     })
 
-    data.rankearnings = rankEarnings
     return res.json({message: "success", data: data})
 }
 
