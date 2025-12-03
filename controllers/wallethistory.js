@@ -291,7 +291,7 @@ exports.getwalletstatistics = async (req, res) => {
             finaldata.rankbonuspercentage = 0.05
             finaldata.rankbonusearnings = finaldata.rankbonusbalance * 0.05
         } else {
-            finaldata.rankbonusbalance = 0
+            // finaldata.rankbonusbalance = 0
             finaldata.rankbonuslevel = "Not Qualified"
             finaldata.rankbonuspercentage = 0
             finaldata.rankbonusearnings = 0
