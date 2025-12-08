@@ -29,6 +29,22 @@ exports.requestpayout = async (req, res) => {
 
     let walletype
 
+     if (type === 'referral') {
+        walletype = 'directreferralbalance'
+        payouttype = 'directreferralbalance'
+    }
+    else if (type === 'unilevel') {
+        walletype = 'unilevelbalance'  
+        payouttype = 'unilevelbalance'    
+    }
+    else if (type === 'gamebalance') {
+        walletype = 'gamebalance'
+        payouttype = 'gamebalance'
+    } else if (type === 'rankbonusbalance'){
+        walletype = 'rankbonusbalance'
+        payouttype = 'rankbonusbalance'
+    }
+
     
     const wallet = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(id), type: payouttype})
     .then(data => data)
@@ -38,10 +54,10 @@ exports.requestpayout = async (req, res) => {
     })
 
     if (!wallet) {
-        if (wallettype == 'rankbonusbalance'){
+        if (type == 'rankbonusbalance'){
             return res.status(400).json({ message: "failed", data: "Rank Bonus Rewards will be processed on December 16th 12 MN." })
         } else {
-            return res.status.json({ message: "failed", data: "Your wallet is missing! Please contact admin to fix this issue." })
+            return res.status(400).json({ message: "failed", data: "Your wallet is missing! Please contact admin to fix this issue." })
         }
     }
 
@@ -49,7 +65,6 @@ exports.requestpayout = async (req, res) => {
         return res.status(400).json({ message: "failed", data: "The amount is greater than your wallet balance" })
     }
     if (type === 'referral') {
-        walletype = 'directreferralbalance'
         const checkifhascut = await checkmaintenance("referral")
         if (checkifhascut !== "success"){
                 if (payoutvaluedata > 9999){
@@ -58,7 +73,6 @@ exports.requestpayout = async (req, res) => {
         }
     }
     else if (type === 'unilevel') {
-        walletype = 'unilevelbalance'
         const checkifhascut = await checkmaintenance("unilevel")
         if (checkifhascut !== "success"){
             if (payoutvaluedata > 9999){
@@ -67,7 +81,6 @@ exports.requestpayout = async (req, res) => {
         }       
     }
     else if (type === 'gamebalance') {
-        walletype = 'gamebalance'
         const checkifhascut = await checkmaintenance("game")
         if (checkifhascut !== "success"){
             if (payoutvaluedata > 9999){
@@ -75,7 +88,6 @@ exports.requestpayout = async (req, res) => {
             }
         }
     } else if (type === 'rankbonusbalance'){
-        walletype = 'rankbonusbalance'
         const hasmaintenance = await checkmaintenance("rankbonus")
         if (hasmaintenance !== "success"){
             return res.status(400).json({ message: "failed", data: "Rank Bonus payout is currently under maintenance. Please try again later." })
@@ -124,7 +136,6 @@ exports.requestpayout = async (req, res) => {
                     data: `Referral payout cannot exceed 50% of your total referral earnings (${maxAllowedPayout})` 
                  });
             }
-            payouttype = 'directreferralbalance'
         } else if (type === 'unilevel'){
             const walletamount = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(id), type: 'unilevelbalance'})
             .then(data => data)
@@ -139,15 +150,8 @@ exports.requestpayout = async (req, res) => {
                     message: "failed", 
                     data: `Referral payout cannot exceed 90% of your total unilevel earnings (${walletamount.amount})` 
                  });
-            }
-            
-            payouttype = 'unilevelbalance'
-        } else if (type === 'gamebalance'){
-            payouttype = 'gamebalance'
-        } else if (type === 'rankbonusbalance'){
-            payouttype = 'rankbonusbalance'
-        }
-
+            }   
+        } 
     
     
     if (wallet?.amount <= 0 && payouttype == 'rankbonusbalance'){
