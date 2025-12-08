@@ -45,7 +45,7 @@ exports.requestpayout = async (req, res) => {
         }
     }
 
-    if (payoutvalue > wallet.amount){
+    if (payoutvalue > wallet?.amount){
         return res.status(400).json({ message: "failed", data: "The amount is greater than your wallet balance" })
     }
     if (type === 'referral') {
