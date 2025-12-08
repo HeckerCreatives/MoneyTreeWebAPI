@@ -37,6 +37,14 @@ exports.requestpayout = async (req, res) => {
         return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
     })
 
+    if (!wallet) {
+        if (wallettype == 'rankbonusbalance'){
+            return res.status(400).json({ message: "failed", data: "Rank Bonus Rewards will be processed on December 16th 12 MN." })
+        } else {
+            return res.status.json({ message: "failed", data: "Your wallet is missing! Please contact admin to fix this issue." })
+        }
+    }
+
     if (payoutvalue > wallet.amount){
         return res.status(400).json({ message: "failed", data: "The amount is greater than your wallet balance" })
     }
@@ -142,7 +150,7 @@ exports.requestpayout = async (req, res) => {
 
     
     
-    if (wallet.amount <= 0 && payouttype == 'rankbonusbalance'){
+    if (wallet?.amount <= 0 && payouttype == 'rankbonusbalance'){
         return res.status(400).json({ message: "failed", data: "Rank Bonus Rewards will be processed on December 16th 12 MN." })
     }
 
