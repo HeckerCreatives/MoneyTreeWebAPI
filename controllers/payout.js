@@ -32,10 +32,40 @@ exports.requestpayout = async (req, res) => {
      if (type === 'referral') {
         walletype = 'directreferralbalance'
         payouttype = 'directreferralbalance'
+
+        const walletamount = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(id), type: 'directreferralbalance'})
+        .then(data => data)
+        .catch(err => {
+            console.log(`There's a problem getting leaderboard data ${err}`)
+            return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
+        })
+    
+        const maxAllowedPayout = walletamount.amount * 0.5;       
+            if (payoutvalue > maxAllowedPayout) {
+            return res.status(400).json({ 
+                message: "failed", 
+                data: `Referral payout cannot exceed 50% of your total referral earnings (${maxAllowedPayout})` 
+                });
+        }
     }
     else if (type === 'unilevel') {
         walletype = 'unilevelbalance'  
         payouttype = 'unilevelbalance'    
+        
+        const walletamount = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(id), type: 'unilevelbalance'})
+        .then(data => data)
+        .catch(err => {
+            console.log(`There's a problem getting leaderboard data ${err}`)
+            return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
+        })
+    
+        const maxAllowedPayout = walletamount.amount * 0.9;       
+            if (payoutvalue > maxAllowedPayout) {
+            return res.status(400).json({ 
+                message: "failed", 
+                data: `Referral payout cannot exceed 90% of your total unilevel earnings (${walletamount.amount})` 
+                });
+        }   
     }
     else if (type === 'gamebalance') {
         walletype = 'gamebalance'
@@ -120,39 +150,6 @@ exports.requestpayout = async (req, res) => {
             }
         }
         
-        if (type === 'referral') {
-
-            const walletamount = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(id), type: 'directreferralbalance'})
-            .then(data => data)
-            .catch(err => {
-                console.log(`There's a problem getting leaderboard data ${err}`)
-                return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
-            })
-
-         const maxAllowedPayout = walletamount.amount * 0.5;       
-             if (payoutvalue > maxAllowedPayout) {
-                return res.status(400).json({ 
-                    message: "failed", 
-                    data: `Referral payout cannot exceed 50% of your total referral earnings (${maxAllowedPayout})` 
-                 });
-            }
-        } else if (type === 'unilevel'){
-            const walletamount = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(id), type: 'unilevelbalance'})
-            .then(data => data)
-            .catch(err => {
-                console.log(`There's a problem getting leaderboard data ${err}`)
-                return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
-            })
-
-         const maxAllowedPayout = walletamount.amount * 0.9;       
-             if (payoutvalue > walletamount.amount) {
-                return res.status(400).json({ 
-                    message: "failed", 
-                    data: `Referral payout cannot exceed 90% of your total unilevel earnings (${walletamount.amount})` 
-                 });
-            }   
-        } 
-    
     
     if (wallet?.amount <= 0 && payouttype == 'rankbonusbalance'){
         return res.status(400).json({ message: "failed", data: "Rank Bonus Rewards will be processed on December 16th 12 MN." })
