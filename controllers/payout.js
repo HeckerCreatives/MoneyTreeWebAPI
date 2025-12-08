@@ -29,6 +29,17 @@ exports.requestpayout = async (req, res) => {
 
     let walletype
 
+    
+    const wallet = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(id), type: payouttype})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting leaderboard data ${err}`)
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
+    })
+
+    if (payoutvalue > wallet.amount){
+        return res.status(400).json({ message: "failed", data: "The amount is greater than your wallet balance" })
+    }
     if (type === 'referral') {
         walletype = 'directreferralbalance'
         const checkifhascut = await checkmaintenance("referral")
@@ -129,19 +140,10 @@ exports.requestpayout = async (req, res) => {
             payouttype = 'rankbonusbalance'
         }
 
-    const wallet = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(id), type: payouttype})
-    .then(data => data)
-    .catch(err => {
-        console.log(`There's a problem getting leaderboard data ${err}`)
-        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
-    })
+    
     
     if (wallet.amount <= 0 && payouttype == 'rankbonusbalance'){
         return res.status(400).json({ message: "failed", data: "Rank Bonus Rewards will be processed on December 16th 12 MN." })
-    }
-
-    if (payoutvalue > wallet.amount){
-        return res.status(400).json({ message: "failed", data: "The amount is greater than your wallet balance" })
     }
 
     await Userwallets.findOneAndUpdate({owner: new mongoose.Types.ObjectId(id), type: payouttype}, {$inc: {amount: -payoutvalue}})
