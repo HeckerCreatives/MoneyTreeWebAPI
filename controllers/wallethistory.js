@@ -261,29 +261,40 @@ exports.getwalletstatistics = async (req, res) => {
         finaldata.rankbonusbalance = rankbonusbalance[0].totalAmount;
 
         if (finaldata.rankbonusbalance >= 5000000){
+            // Hall of Fame Level 6: ₱5,000,000 and up → 75% bonus
             finaldata.rankbonuslevel = "Hall of Fame Level 6"
             finaldata.rankbonuspercentage = 0.75
             finaldata.rankbonusearnings = finaldata.rankbonusbalance * 0.75
-        } else if (finaldata.rankbonusbalance >= 1000000){
+        } else if (finaldata.rankbonusbalance >= 1000000 && finaldata.rankbonusbalance <= 4999999){
+            // Prestige Level 5: ₱1,000,000 to ₱4,999,999 → 55% bonus
             finaldata.rankbonuslevel = "Prestige Level 5"
             finaldata.rankbonuspercentage = 0.55
             finaldata.rankbonusearnings = finaldata.rankbonusbalance * 0.55
-        } else if (finaldata.rankbonusbalance >= 500000){
+        } else if (finaldata.rankbonusbalance >= 500000 && finaldata.rankbonusbalance <= 999999){
+            // Director Level 4: ₱500,000 to ₱999,999 → 35% bonus
             finaldata.rankbonuslevel = "Director Level 4"
             finaldata.rankbonuspercentage = 0.35
             finaldata.rankbonusearnings = finaldata.rankbonusbalance * 0.35
-        } else if (finaldata.rankbonusbalance >= 100000){
+        } else if (finaldata.rankbonusbalance >= 100000 && finaldata.rankbonusbalance <= 499999){
+            // Manager Level 3: ₱100,000 to ₱499,999 → 20% bonus
             finaldata.rankbonuslevel = "Manager Level 3"
             finaldata.rankbonuspercentage = 0.20
             finaldata.rankbonusearnings = finaldata.rankbonusbalance * 0.20
-        } else if (finaldata.rankbonusbalance >= 50000){
+        } else if (finaldata.rankbonusbalance >= 50000 && finaldata.rankbonusbalance <= 99999){
+            // Senior Level 2: ₱50,000 to ₱99,999 → 10% bonus
             finaldata.rankbonuslevel = "Senior Level 2"
             finaldata.rankbonuspercentage = 0.10
             finaldata.rankbonusearnings = finaldata.rankbonusbalance * 0.10
-        } else if (finaldata.rankbonusbalance >= 5000){
+        } else if (finaldata.rankbonusbalance >= 5000 && finaldata.rankbonusbalance <= 49999){
+            // Associate Level 1: ₱5,000 to ₱49,999 → 5% bonus
             finaldata.rankbonuslevel = "Associate Level 1"
             finaldata.rankbonuspercentage = 0.05
             finaldata.rankbonusearnings = finaldata.rankbonusbalance * 0.05
+        } else {
+            finaldata.rankbonusbalance = 0
+            finaldata.rankbonuslevel = "Not Qualified"
+            finaldata.rankbonuspercentage = 0
+            finaldata.rankbonusearnings = 0
         }
     
     }
@@ -497,31 +508,37 @@ exports.getrankbonuswallethistoryforadmin = async (req, res) => {
             let rankEarnings = 0;
 
             if (user.totalAmount >= 5000000) {
+                // Hall of Fame Level 6: ₱5,000,000 and up → 75% bonus
                 rankLevel = "Hall of Fame Level 6";
                 rankLevelNumber = 6;
                 rankPercentage = 0.75;
                 rankEarnings = user.totalAmount * 0.75;
-            } else if (user.totalAmount >= 1000000) {
+            } else if (user.totalAmount >= 1000000 && user.totalAmount <= 4999999) {
+                // Prestige Level 5: ₱1,000,000 to ₱4,999,999 → 55% bonus
                 rankLevel = "Prestige Level 5";
                 rankLevelNumber = 5;
                 rankPercentage = 0.55;
                 rankEarnings = user.totalAmount * 0.55;
-            } else if (user.totalAmount >= 500000) {
+            } else if (user.totalAmount >= 500000 && user.totalAmount <= 999999) {
+                // Director Level 4: ₱500,000 to ₱999,999 → 35% bonus
                 rankLevel = "Director Level 4";
                 rankLevelNumber = 4;
                 rankPercentage = 0.35;
                 rankEarnings = user.totalAmount * 0.35;
-            } else if (user.totalAmount >= 100000) {
+            } else if (user.totalAmount >= 100000 && user.totalAmount <= 499999) {
+                // Manager Level 3: ₱100,000 to ₱499,999 → 20% bonus
                 rankLevel = "Manager Level 3";
                 rankLevelNumber = 3;
                 rankPercentage = 0.20;
                 rankEarnings = user.totalAmount * 0.20;
-            } else if (user.totalAmount >= 50000) {
+            } else if (user.totalAmount >= 50000 && user.totalAmount <= 99999) {
+                // Senior Level 2: ₱50,000 to ₱99,999 → 10% bonus
                 rankLevel = "Senior Level 2";
                 rankLevelNumber = 2;
                 rankPercentage = 0.10;
                 rankEarnings = user.totalAmount * 0.10;
-            } else if (user.totalAmount >= 5000) {
+            } else if (user.totalAmount >= 5000 && user.totalAmount <= 49999) {
+                // Associate Level 1: ₱5,000 to ₱49,999 → 5% bonus
                 rankLevel = "Associate Level 1";
                 rankLevelNumber = 1;
                 rankPercentage = 0.05;

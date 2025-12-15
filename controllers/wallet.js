@@ -39,16 +39,22 @@ exports.playerwallets = async (req, res) => {
     let rankEarnings = 0;
 
     if (rankbonuswalletamount.totalAmount >= 5000000) {
+        // Hall of Fame Level 6: ₱5,000,000 and up → 75% bonus
         rankEarnings = rankbonuswalletamount.totalAmount * 0.75;
-    } else if (rankbonuswalletamount.totalAmount >= 1000000) {
+    } else if (rankbonuswalletamount.totalAmount >= 1000000 && rankbonuswalletamount.totalAmount <= 4999999) {
+        // Prestige Level 5: ₱1,000,000 to ₱4,999,999 → 55% bonus
         rankEarnings = rankbonuswalletamount.totalAmount * 0.55;
-    } else if (rankbonuswalletamount.totalAmount >= 500000) {
+    } else if (rankbonuswalletamount.totalAmount >= 500000 && rankbonuswalletamount.totalAmount <= 999999) {
+        // Director Level 4: ₱500,000 to ₱999,999 → 35% bonus
         rankEarnings = rankbonuswalletamount.totalAmount * 0.35;
-    } else if (rankbonuswalletamount.totalAmount >= 100000) {
+    } else if (rankbonuswalletamount.totalAmount >= 100000 && rankbonuswalletamount.totalAmount <= 499999) {
+        // Manager Level 3: ₱100,000 to ₱499,999 → 20% bonus
         rankEarnings = rankbonuswalletamount.totalAmount * 0.20;
-    } else if (rankbonuswalletamount.totalAmount >= 50000) {
+    } else if (rankbonuswalletamount.totalAmount >= 50000 && rankbonuswalletamount.totalAmount <= 99999) {
+        // Senior Level 2: ₱50,000 to ₱99,999 → 10% bonus
         rankEarnings = rankbonuswalletamount.totalAmount * 0.10;
-    } else if (rankbonuswalletamount.totalAmount >= 5000) {
+    } else if (rankbonuswalletamount.totalAmount >= 5000 && rankbonuswalletamount.totalAmount <= 49999) {
+        // Associate Level 1: ₱5,000 to ₱49,999 → 5% bonus
         rankEarnings = rankbonuswalletamount.totalAmount * 0.05;
     }
 
