@@ -14,63 +14,11 @@ exports.playerwallets = async (req, res) => {
 
         return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
-
-    let rankbonuswalletamount = await Wallethistory.aggregate([
-            {
-                $match: {
-                    owner: new mongoose.Types.ObjectId(id),
-                    type: "directreferralbalance",
-                    createdAt: {
-                        // november 16 2025 to december 15 2025
-                        $gte: new Date("2025-11-16T00:00:00Z"),
-                        $lt: new Date("2025-12-16T00:00:00Z")
-                    }
-                }
-            },
-            {
-                $group: {
-                    _id: null,
-                    totalAmount: { $sum: "$amount" }
-                }
-            }
-        ])
-
-    rankbonuswalletamount = rankbonuswalletamount[0] || { totalAmount: 0 }
-    let rankEarnings = 0;
-
-    if (rankbonuswalletamount.totalAmount >= 5000000) {
-        // Hall of Fame Level 6: ₱5,000,000 and up → 75% bonus
-        rankEarnings = rankbonuswalletamount.totalAmount * 0.75;
-    } else if (rankbonuswalletamount.totalAmount >= 1000000 && rankbonuswalletamount.totalAmount <= 4999999) {
-        // Prestige Level 5: ₱1,000,000 to ₱4,999,999 → 55% bonus
-        rankEarnings = rankbonuswalletamount.totalAmount * 0.55;
-    } else if (rankbonuswalletamount.totalAmount >= 500000 && rankbonuswalletamount.totalAmount <= 999999) {
-        // Director Level 4: ₱500,000 to ₱999,999 → 35% bonus
-        rankEarnings = rankbonuswalletamount.totalAmount * 0.35;
-    } else if (rankbonuswalletamount.totalAmount >= 100000 && rankbonuswalletamount.totalAmount <= 499999) {
-        // Manager Level 3: ₱100,000 to ₱499,999 → 20% bonus
-        rankEarnings = rankbonuswalletamount.totalAmount * 0.20;
-    } else if (rankbonuswalletamount.totalAmount >= 50000 && rankbonuswalletamount.totalAmount <= 99999) {
-        // Senior Level 2: ₱50,000 to ₱99,999 → 10% bonus
-        rankEarnings = rankbonuswalletamount.totalAmount * 0.10;
-    } else if (rankbonuswalletamount.totalAmount >= 5000 && rankbonuswalletamount.totalAmount <= 49999) {
-        // Associate Level 1: ₱5,000 to ₱49,999 → 5% bonus
-        rankEarnings = rankbonuswalletamount.totalAmount * 0.05;
-    }
-
     const data = {}
 
     wallets.forEach(datawallet => {
-        const {type, amount} = datawallet
-        
-        data[type] = amount
-        if (type === "rankbonusbalance"){
-            data["rankbonusbalance"] = rankEarnings
-            if (amount > 0){
-                data["rankbonusbalance"] = amount
-            }
-        }
-
+        const {type, amount} = datawallet     
+        data[type] = amount || 0
     })
 
     return res.json({message: "success", data: data})
