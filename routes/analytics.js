@@ -5,6 +5,7 @@ const router = require('express').Router();
 
 router
 .get("/getreferrallinkstatus", protectplayer, getreferrallinkstatus)
+
 .get("/getpayingraph", protectsuperadmin, getpayingraph)
 .get("/getcommissiongraph", protectsuperadmin, getcommissiongraph)
 .get("/getproductgraph", protectsuperadmin, getproductgraph)

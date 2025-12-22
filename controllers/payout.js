@@ -59,12 +59,12 @@ exports.requestpayout = async (req, res) => {
             return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
         })
     
-        const maxAllowedPayout = walletamount.amount * 0.9;       
-            if (payoutvalue > maxAllowedPayout) {
+        // const maxAllowedPayout = walletamount.amount * 0.9;       
+        if (payoutvalue > walletamount.amount) {
             return res.status(400).json({ 
                 message: "failed", 
                 data: `Referral payout cannot exceed 90% of your total unilevel earnings (${walletamount.amount})` 
-                });
+            });
         }   
     }
     else if (type === 'gamebalance') {
